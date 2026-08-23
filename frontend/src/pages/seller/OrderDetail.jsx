@@ -5,7 +5,9 @@ import {
 } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import StatusBadge from '../../components/StatusBadge';
+import ShipmentPanel from '../../components/ShipmentPanel';
 import * as sellerOrderService from '../../services/sellerOrder.service';
+import * as sellerShipmentService from '../../services/sellerShipment.service';
 
 const NEXT_STATUS = {
   PLACED: 'CONFIRMED',
@@ -106,12 +108,14 @@ export default function SellerOrderDetail() {
         </Grid>
       </Paper>
 
-      {order.shipment?.tracking_number && (
-        <Paper sx={{ p: 3, mb: 2 }}>
-          <Typography variant="subtitle2">Tracking</Typography>
-          <Typography variant="body2">{order.shipment.tracking_number} {order.shipment.courier_name && `via ${order.shipment.courier_name}`}</Typography>
-        </Paper>
-      )}
+      <Paper sx={{ p: 3, mb: 2 }}>
+        <ShipmentPanel
+          sellerOrderId={order.id}
+          initialShipment={order.shipment}
+          initialTracking={order.tracking}
+          service={sellerShipmentService}
+        />
+      </Paper>
 
       <Box sx={{ display: 'flex', gap: 1.5 }}>
         {next && (

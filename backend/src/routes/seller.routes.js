@@ -1,7 +1,9 @@
 const express = require('express');
+const { body } = require('express-validator');
 const controller = require('../controllers/seller.controller');
 const productController = require('../controllers/product.controller');
 const sellerOrderController = require('../controllers/sellerOrder.controller');
+const sellerShipmentController = require('../controllers/sellerShipment.controller');
 const validators = require('../validators/seller.validator');
 const productValidators = require('../validators/product.validator');
 const sellerOrderValidators = require('../validators/sellerOrder.validator');
@@ -48,6 +50,14 @@ orderRouter.use(authenticate, sellerScope, requireApprovedSeller);
 orderRouter.get('/', sellerOrderController.listMine);
 orderRouter.get('/:id', sellerOrderController.getMineById);
 orderRouter.post('/:id/status', sellerOrderValidators.updateStatus, validate, sellerOrderController.updateStatus);
+orderRouter.get('/:id/shipment', sellerShipmentController.getShipment);
+orderRouter.post('/:id/shipment/create', sellerShipmentController.createShipment);
+orderRouter.get('/:id/shipment/couriers', sellerShipmentController.getCouriers);
+orderRouter.post('/:id/shipment/awb', [body('courierId').notEmpty()], validate, sellerShipmentController.generateAWB);
+orderRouter.post('/:id/shipment/pickup', sellerShipmentController.requestPickup);
+orderRouter.get('/:id/shipment/label', sellerShipmentController.generateLabel);
+orderRouter.get('/:id/shipment/track', sellerShipmentController.trackShipment);
+orderRouter.post('/:id/shipment/cancel', sellerShipmentController.cancelShipment);
 router.use('/orders', orderRouter);
 
 module.exports = router;

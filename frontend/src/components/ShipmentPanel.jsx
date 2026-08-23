@@ -6,13 +6,14 @@ import {
 import LocalShippingRoundedIcon from '@mui/icons-material/LocalShippingRounded';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import RadioButtonUncheckedRoundedIcon from '@mui/icons-material/RadioButtonUncheckedRounded';
-import StatusBadge from '../StatusBadge';
-import * as shipmentService from '../../services/adminShipment.service';
+import StatusBadge from './StatusBadge';
 
 const CANCELLABLE = ['SHIPMENT_CREATED', 'AWB_ASSIGNED', 'PICKUP_REQUESTED'];
 const TRACKABLE = ['PICKUP_REQUESTED', 'PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY'];
 
-export default function ShipmentPanel({ sellerOrderId, initialShipment, initialTracking }) {
+// Shared by admin and seller order-detail pages — `service` is either adminShipment.service.js
+// or sellerShipment.service.js (same 7-function shape, different scoped API base path).
+export default function ShipmentPanel({ sellerOrderId, initialShipment, initialTracking, service }) {
   const [shipment, setShipment] = useState(initialShipment || null);
   const [tracking, setTracking] = useState(initialTracking || []);
   const [busy, setBusy] = useState(false);
@@ -33,47 +34,47 @@ export default function ShipmentPanel({ sellerOrderId, initialShipment, initialT
   };
 
   const refresh = async () => {
-    const data = await shipmentService.getShipment(sellerOrderId);
+    const data = await service.getShipment(sellerOrderId);
     setShipment(data.shipment);
     setTracking(data.tracking);
   };
 
   const handleCreate = () => run('create shipment', async () => {
-    await shipmentService.createShipment(sellerOrderId);
+    await service.createShipment(sellerOrderId);
     await refresh();
   });
 
   const handleOpenCouriers = () => run('load couriers', async () => {
-    const list = await shipmentService.getCouriers(sellerOrderId);
+    const list = await service.getCouriers(sellerOrderId);
     setCouriers(list);
     setCourierDialogOpen(true);
   });
 
   const handleSelectCourier = (courierId) => run('generate AWB', async () => {
-    await shipmentService.generateAWB(sellerOrderId, courierId);
+    await service.generateAWB(sellerOrderId, courierId);
     setCourierDialogOpen(false);
     await refresh();
   });
 
   const handlePickup = () => run('request pickup', async () => {
-    await shipmentService.requestPickup(sellerOrderId);
+    await service.requestPickup(sellerOrderId);
     await refresh();
   });
 
   const handleTrack = () => run('refresh tracking', async () => {
-    const data = await shipmentService.trackShipment(sellerOrderId);
+    const data = await service.trackShipment(sellerOrderId);
     setShipment(data.shipment);
     setTracking(data.tracking);
   });
 
   const handleLabel = () => run('generate label', async () => {
-    const result = await shipmentService.generateLabel(sellerOrderId);
+    const result = await service.generateLabel(sellerOrderId);
     if (result?.label_url) window.open(result.label_url, '_blank');
     await refresh();
   });
 
   const handleCancel = () => run('cancel shipment', async () => {
-    await shipmentService.cancelShipment(sellerOrderId);
+    await service.cancelShipment(sellerOrderId);
     await refresh();
   });
 

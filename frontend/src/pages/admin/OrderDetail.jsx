@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import { Box, Typography, Paper, Divider, Grid, CircularProgress } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import StatusBadge from '../../components/StatusBadge';
-import ShipmentPanel from '../../components/admin/ShipmentPanel';
+import ShipmentPanel from '../../components/ShipmentPanel';
 import * as adminOrderService from '../../services/adminOrder.service';
+import * as adminShipmentService from '../../services/adminShipment.service';
 
 function formatINR(value) {
   return `₹${Number(value).toLocaleString('en-IN')}`;
@@ -53,7 +54,7 @@ export default function AdminOrderDetail() {
             </Grid>
           </Grid>
 
-          <ShipmentPanel sellerOrderId={so.id} initialShipment={so.shipment} initialTracking={so.tracking} />
+          <ShipmentPanel sellerOrderId={so.id} initialShipment={so.shipment} initialTracking={so.tracking} service={adminShipmentService} />
         </Paper>
       ))}
 

@@ -71,8 +71,11 @@ async function getMineById(req, res, next) {
       { id: sellerOrder.id }
     );
     const shipment = await db.queryOne('SELECT * FROM shipments WHERE seller_order_id = :id', { id: sellerOrder.id });
+    const tracking = shipment
+      ? await db.query('SELECT status, location, note, tracked_at FROM shipment_tracking WHERE shipment_id = :id ORDER BY tracked_at ASC', { id: shipment.id })
+      : [];
 
-    return success(res, { data: { ...sellerOrder, items, history, shipment } });
+    return success(res, { data: { ...sellerOrder, items, history, shipment, tracking } });
   } catch (err) {
     return next(err);
   }
