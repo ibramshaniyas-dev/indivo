@@ -3,7 +3,12 @@ const { v4: uuidv4 } = require('uuid');
 const db = require('../../src/config/database');
 const slugify = require('../../src/utils/slugify');
 const { createInventoryForVariant } = require('../../src/services/inventory.service');
-const { randomFrom, PRODUCT_TEMPLATES } = require('./data/demoData');
+const { randomFrom, PRODUCT_TEMPLATES, getImageKeyword } = require('./data/demoData');
+
+function productImageUrl(productName, categoryName, lockSeed) {
+  const keyword = getImageKeyword(productName, categoryName);
+  return `https://loremflickr.com/600/600/${keyword}?lock=${lockSeed}`;
+}
 
 const SIZE_VALUES = ['S', 'M', 'L', 'XL', 'XXL'];
 const COLOR_VALUES = ['Black', 'White', 'Blue', 'Maroon', 'Green', 'Beige'];
@@ -133,7 +138,7 @@ async function createProduct({ name, categoryId, categoryName, brandId, sellerId
     for (let i = 0; i < imageCount; i += 1) {
       await tx.query(
         `INSERT INTO product_images (product_id, url, sort_order, is_primary) VALUES (:productId, :url, :sortOrder, :isPrimary)`,
-        { productId: newProductId, url: `https://picsum.photos/seed/${slug}-${i}/600/600`, sortOrder: i, isPrimary: i === 0 ? 1 : 0 }
+        { productId: newProductId, url: productImageUrl(name, categoryName, `${newProductId}${i}`), sortOrder: i, isPrimary: i === 0 ? 1 : 0 }
       );
     }
 

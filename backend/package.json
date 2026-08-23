@@ -13,6 +13,7 @@
     "seed:products": "node database/seed/seedProducts.js",
     "seed:customers": "node database/seed/seedCustomers.js",
     "seed:cms": "node database/seed/seedCms.js",
+    "fix:product-images": "node database/seed/fixProductImages.js",
     "seed:demo": "npm run seed && npm run seed:catalog-base && npm run seed:sellers && npm run seed:products && npm run seed:customers && npm run seed:cms",
     "test": "jest --runInBand"
   },

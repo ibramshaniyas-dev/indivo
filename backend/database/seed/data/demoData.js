@@ -108,4 +108,86 @@ const PRODUCT_TEMPLATES = {
   ],
 };
 
-module.exports = { FIRST_NAMES, LAST_NAMES, randomFrom, randomName, SELLERS, CITIES, BRANDS, CATEGORY_TREE, PRODUCT_TEMPLATES };
+// Maps each product template name to a real search keyword so seeded photos actually depict
+// the product (a shirt looks like a shirt, a perfume bottle looks like a perfume bottle) instead
+// of a random unrelated stock photo. Falls back to a category-level keyword for anything unmapped.
+const PRODUCT_IMAGE_KEYWORDS = {
+  "Men's Premium Cotton Casual Shirt": 'mens-shirt',
+  'Classic Linen Formal Shirt': 'formal-shirt',
+  "Men's Slim Fit Denim Jeans": 'denim-jeans',
+  'Premium Cotton Kurta': 'kurta',
+  "Women's Floral Printed Dress": 'summer-dress',
+  "Women's Designer Anarkali": 'anarkali-dress',
+  'Premium Silk Saree': 'silk-saree',
+  'Hand Embroidered Churidar': 'churidar',
+  'Kids Cotton Party Wear Set': 'kids-clothing',
+  "Men's Casual Polo T-Shirt": 'polo-shirt',
+  "Women's Straight Fit Trousers": 'womens-trousers',
+  "Men's Formal Blazer": 'blazer',
+  "Women's Embroidered Lehenga": 'lehenga',
+  'Kids Denim Dungaree': 'kids-fashion',
+  "Men's Ethnic Nehru Jacket": 'nehru-jacket',
+  'Kids Ethnic Wear Set': 'kids-ethnic-wear',
+  'Premium Egyptian Cotton Fabric': 'cotton-fabric',
+  'Pure Kanchipuram Silk Fabric': 'silk-fabric',
+  'Premium Linen Suit Fabric': 'linen-fabric',
+  'Designer Rayon Fabric': 'fabric-texture',
+  'Premium Denim Fabric': 'denim-fabric',
+  'Soft Velvet Fabric': 'velvet-fabric',
+  'Organic Cotton Fabric': 'cotton-fabric',
+  'Printed Cotton Fabric': 'printed-fabric',
+  'Premium Wool Blend Fabric': 'wool-fabric',
+  'Chanderi Silk Fabric': 'silk-fabric',
+  'Banarasi Silk Fabric': 'silk-saree',
+  'Pure Linen Shirting Fabric': 'linen-fabric',
+  'Royal Oud Eau De Parfum': 'perfume-bottle',
+  'Imperial Musk Perfume': 'perfume-bottle',
+  'Golden Amber Eau De Parfum': 'perfume',
+  'Classic Rose Fragrance': 'perfume',
+  'Sandalwood Premium Attar': 'attar-bottle',
+  'Ocean Breeze Eau De Toilette': 'cologne',
+  'Royal Leather Fragrance': 'perfume-bottle',
+  'White Musk Unisex Perfume': 'perfume',
+  'Heritage Oud Attar': 'attar-bottle',
+  'Citrus Fresh Cologne': 'cologne',
+  'Herbal Face Wash': 'skincare',
+  'Premium Hair Serum': 'hair-care',
+  'Natural Body Lotion': 'body-lotion',
+  'Luxury Face Cream': 'face-cream',
+  'Organic Hair Oil': 'hair-oil',
+  'Charcoal Face Mask': 'face-mask',
+  'Vitamin C Face Serum': 'serum-bottle',
+  'Aloe Vera Gel': 'aloe-vera',
+  'Leather Wallet': 'leather-wallet',
+  'Premium Belt': 'leather-belt',
+  'Classic Sunglasses': 'sunglasses',
+  'Silk Tie': 'necktie',
+  'Designer Handbag': 'handbag',
+  'Travel Backpack': 'backpack',
+  'Leather Watch Strap': 'wristwatch',
+  'Cufflink Set': 'cufflinks',
+  'Classic Leather Loafers': 'leather-loafers',
+  'Premium Casual Sneakers': 'sneakers',
+  "Women's Designer Flats": 'womens-flats',
+  'Traditional Jutti': 'indian-juttis',
+  "Men's Formal Shoes": 'formal-shoes',
+  "Women's Block Heels": 'block-heels',
+  'Kids Sports Shoes': 'kids-shoes',
+};
+
+const CATEGORY_IMAGE_KEYWORDS = {
+  Fashion: 'fashion-clothing', "Men's Fashion": 'mens-fashion', "Women's Fashion": 'womens-fashion',
+  'Kids Fashion': 'kids-fashion', Fabrics: 'fabric-texture', Cotton: 'cotton-fabric', Silk: 'silk-fabric',
+  Linen: 'linen-fabric', 'Perfumes & Fragrances': 'perfume-bottle', "Men's Perfume": 'cologne',
+  "Women's Perfume": 'perfume', Attar: 'attar-bottle', 'Beauty & Personal Care': 'cosmetics',
+  Accessories: 'fashion-accessories', Footwear: 'shoes',
+};
+
+function getImageKeyword(productName, categoryName) {
+  return PRODUCT_IMAGE_KEYWORDS[productName] || CATEGORY_IMAGE_KEYWORDS[categoryName] || 'product';
+}
+
+module.exports = {
+  FIRST_NAMES, LAST_NAMES, randomFrom, randomName, SELLERS, CITIES, BRANDS, CATEGORY_TREE, PRODUCT_TEMPLATES,
+  CATEGORY_IMAGE_KEYWORDS, getImageKeyword,
+};
