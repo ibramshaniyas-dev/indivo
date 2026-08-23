@@ -1,5 +1,10 @@
 import api from './api';
 
+export async function listShipments(params) {
+  const { data } = await api.get('/admin/shipments', { params });
+  return data;
+}
+
 export async function getShipment(sellerOrderId) {
   const { data } = await api.get(`/admin/shipments/${sellerOrderId}`);
   return data.data;

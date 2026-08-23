@@ -36,6 +36,7 @@ import SellerApprovals from './pages/admin/SellerApprovals';
 import AdminProducts from './pages/admin/Products';
 import AdminCustomers from './pages/admin/Customers';
 import AdminOrders from './pages/admin/Orders';
+import AdminShipments from './pages/admin/Shipments';
 import AdminOrderDetail from './pages/admin/OrderDetail';
 import Categories from './pages/admin/Categories';
 import Brands from './pages/admin/Brands';
@@ -55,6 +56,7 @@ function adminRoutes() {
       <Route path="customers" element={<ProtectedRoute permission="customers.view"><AdminCustomers /></ProtectedRoute>} />
       <Route path="orders" element={<ProtectedRoute permission="orders.view"><AdminOrders /></ProtectedRoute>} />
       <Route path="orders/:id" element={<ProtectedRoute permission="orders.view"><AdminOrderDetail /></ProtectedRoute>} />
+      <Route path="shipments" element={<ProtectedRoute permission="orders.view"><AdminShipments /></ProtectedRoute>} />
       <Route path="returns" element={<ProtectedRoute permission="returns.view"><ComingSoon title="Returns" /></ProtectedRoute>} />
       <Route path="payments" element={<ProtectedRoute permission="payments.view"><ComingSoon title="Payments" /></ProtectedRoute>} />
       <Route path="refunds" element={<ProtectedRoute permission="refunds.view"><ComingSoon title="Refunds" /></ProtectedRoute>} />

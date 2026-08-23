@@ -13,6 +13,66 @@ async function loadSellerOrder(sellerOrderId) {
   return sellerOrder;
 }
 
+/**
+ * Every seller_order, LEFT JOINed to its shipment — so orders that never had a shipment created
+ * yet still show up (as NOT_CREATED) instead of only surfacing ones an admin already acted on.
+ * This is the "overall tracking" view; drilling into an order (existing getShipment + the
+ * order-detail ShipmentPanel) is still where the create/AWB/pickup/track actions live.
+ */
+async function list(req, res, next) {
+  try {
+    const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+    const limit = Math.min(parseInt(req.query.limit, 10) || 20, 100);
+    const offset = (page - 1) * limit;
+
+    const conditions = [];
+    const params = {};
+    if (req.query.status === 'NOT_CREATED') {
+      conditions.push('sh.id IS NULL');
+    } else if (req.query.status) {
+      conditions.push('sh.status = :status');
+      params.status = req.query.status;
+    }
+    if (req.query.search) {
+      conditions.push('(o.order_number LIKE :search OR so.sub_order_number LIKE :search OR c.name LIKE :search OR sh.tracking_number LIKE :search OR s.display_name LIKE :search)');
+      params.search = `%${req.query.search}%`;
+    }
+    const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+
+    const rows = await db.query(
+      `SELECT so.id AS seller_order_id, so.sub_order_number, so.status AS order_status,
+              s.id AS seller_id, s.display_name AS seller_name,
+              o.id AS order_id, o.order_number, o.payment_method, o.placed_at,
+              c.name AS customer_name,
+              sh.id AS shipment_id, sh.status AS shipment_status, sh.courier_name,
+              sh.tracking_number, sh.tracking_url, sh.updated_at AS shipment_updated_at
+       FROM seller_orders so
+       JOIN sellers s ON s.id = so.seller_id
+       JOIN orders o ON o.id = so.order_id
+       JOIN customers c ON c.id = o.customer_id
+       LEFT JOIN shipments sh ON sh.seller_order_id = so.id
+       ${where}
+       ORDER BY o.placed_at DESC
+       LIMIT :limit OFFSET :offset`,
+      { ...params, limit, offset }
+    );
+    const [{ total }] = await db.query(
+      `SELECT COUNT(*) AS total
+       FROM seller_orders so
+       JOIN sellers s ON s.id = so.seller_id
+       JOIN orders o ON o.id = so.order_id
+       JOIN customers c ON c.id = o.customer_id
+       LEFT JOIN shipments sh ON sh.seller_order_id = so.id
+       ${where}`,
+      params
+    );
+
+    return success(res, { data: rows, meta: { page, limit, total: Number(total) } });
+  } catch (err) {
+    return next(err);
+  }
+}
+
 async function getShipment(req, res, next) {
   try {
     const shipment = await db.queryOne('SELECT * FROM shipments WHERE seller_order_id = :id', { id: req.params.sellerOrderId });
@@ -139,4 +199,4 @@ async function cancelShipment(req, res, next) {
   }
 }
 
-module.exports = { getShipment, createShipment, getCouriers, generateAWB, requestPickup, generateLabel, trackShipment, cancelShipment };
+module.exports = { list, getShipment, createShipment, getCouriers, generateAWB, requestPickup, generateLabel, trackShipment, cancelShipment };

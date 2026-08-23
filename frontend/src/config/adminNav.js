@@ -6,6 +6,7 @@ import CategoryRoundedIcon from '@mui/icons-material/CategoryRounded';
 import LocalOfferRoundedIcon from '@mui/icons-material/LocalOfferRounded';
 import TuneRoundedIcon from '@mui/icons-material/TuneRounded';
 import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded';
+import LocalShippingRoundedIcon from '@mui/icons-material/LocalShippingRounded';
 import PaymentsRoundedIcon from '@mui/icons-material/PaymentsRounded';
 import PercentRoundedIcon from '@mui/icons-material/PercentRounded';
 import AccountBalanceWalletRoundedIcon from '@mui/icons-material/AccountBalanceWalletRounded';
@@ -53,6 +54,7 @@ export const ADMIN_NAV = [
     section: 'Orders',
     items: [
       { label: 'All Orders', icon: ReceiptLongRoundedIcon, to: '/orders', permission: 'orders.view' },
+      { label: 'Shipments', icon: LocalShippingRoundedIcon, to: '/shipments', permission: 'orders.view' },
       { label: 'Returns', icon: ReceiptLongRoundedIcon, to: '/returns', permission: 'returns.view' },
     ],
   },
