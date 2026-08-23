@@ -1,10 +1,12 @@
 const express = require('express');
 const controller = require('../controllers/seller.controller');
+const productController = require('../controllers/product.controller');
 const validators = require('../validators/seller.validator');
+const productValidators = require('../validators/product.validator');
 const validate = require('../middleware/validate.middleware');
-const { authenticate, sellerScope } = require('../middleware/auth.middleware');
+const { authenticate, sellerScope, requireApprovedSeller } = require('../middleware/auth.middleware');
 const { authLimiter } = require('../middleware/rateLimit.middleware');
-const { uploadSellerDocument } = require('../middleware/upload.middleware');
+const { uploadSellerDocument, uploadProductMedia } = require('../middleware/upload.middleware');
 
 const router = express.Router();
 
@@ -26,5 +28,16 @@ router.post(
   controller.uploadDocument
 );
 router.delete('/documents/:docId', authenticate, sellerScope, controller.removeDocument);
+
+const productRouter = express.Router();
+productRouter.use(authenticate, sellerScope, requireApprovedSeller);
+productRouter.get('/', productController.listMine);
+productRouter.post('/', productValidators.create, validate, productController.create);
+productRouter.get('/:id', productValidators.idParam, validate, productController.getMineById);
+productRouter.put('/:id', productValidators.update, validate, productController.update);
+productRouter.post('/:id/variants', productValidators.idParam, productValidators.addVariant, validate, productController.addVariant);
+productRouter.post('/:id/images', productValidators.idParam, validate, uploadProductMedia.array('images', 8), productController.uploadImages);
+productRouter.post('/:id/submit', productValidators.idParam, validate, productController.submitForReview);
+router.use('/products', productRouter);
 
 module.exports = router;

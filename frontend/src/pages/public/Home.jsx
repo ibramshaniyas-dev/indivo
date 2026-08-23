@@ -1,9 +1,22 @@
+import { useEffect, useState } from 'react';
 import { Box, Container, Typography, Grid, Paper } from '@mui/material';
 import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded';
 import SectionHeader from '../../components/SectionHeader';
 import EmptyState from '../../components/EmptyState';
+import ProductCard from '../../components/ProductCard';
+import ProductCardSkeleton from '../../components/ProductCardSkeleton';
+import { listProducts } from '../../services/product.service';
 
 export default function Home() {
+  const [trending, setTrending] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    listProducts({ sort: 'newest', limit: 12 })
+      .then((res) => setTrending(res.data))
+      .finally(() => setLoading(false));
+  }, []);
+
   return (
     <Box>
       <Box
@@ -42,11 +55,25 @@ export default function Home() {
         </Grid>
 
         <SectionHeader title="Trending Products" subtitle="Popular picks from across INDIVO" />
-        <EmptyState
-          icon={StorefrontRoundedIcon}
-          title="Catalog coming soon"
-          description="Sellers are onboarding now — trending products will appear here as soon as listings go live."
-        />
+        {loading ? (
+          <Grid container spacing={2}>
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Grid item xs={6} sm={4} md={2} key={i}><ProductCardSkeleton /></Grid>
+            ))}
+          </Grid>
+        ) : trending.length === 0 ? (
+          <EmptyState
+            icon={StorefrontRoundedIcon}
+            title="Catalog coming soon"
+            description="Sellers are onboarding now — trending products will appear here as soon as listings go live."
+          />
+        ) : (
+          <Grid container spacing={2}>
+            {trending.map((p) => (
+              <Grid item xs={6} sm={4} md={2} key={p.id}><ProductCard product={p} /></Grid>
+            ))}
+          </Grid>
+        )}
       </Container>
     </Box>
   );

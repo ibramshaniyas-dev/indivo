@@ -4,6 +4,8 @@ import SellerDashboardLayout from './layouts/SellerDashboardLayout';
 import AdminLayout from './layouts/AdminLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import Home from './pages/public/Home';
+import SearchResults from './pages/public/SearchResults';
+import ProductDetail from './pages/public/ProductDetail';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import SellerRegister from './pages/seller/Register';
@@ -17,6 +19,8 @@ export default function App() {
       <Routes>
         <Route element={<CustomerLayout />}>
           <Route path="/" element={<Home />} />
+          <Route path="/search" element={<SearchResults />} />
+          <Route path="/product/:slug" element={<ProductDetail />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/sell" element={<SellerRegister />} />

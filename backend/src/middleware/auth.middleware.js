@@ -93,6 +93,14 @@ function sellerScope(req, res, next) {
   return next();
 }
 
+/** Gates operations (like publishing products) that require the seller company itself to be admin-approved. */
+function requireApprovedSeller(req, res, next) {
+  if (req.user?.sellerStatus !== 'APPROVED') {
+    return next(ApiError.forbidden('Your seller account must be approved before you can manage products'));
+  }
+  return next();
+}
+
 /** Restricts seller-scoped routes to specific seller_role values (e.g. only OWNER can add staff). */
 function requireSellerRole(...roles) {
   return (req, res, next) => {
@@ -134,4 +142,4 @@ function can(module, action) {
   };
 }
 
-module.exports = { authenticate, requireUserType, sellerScope, requireSellerRole, can };
+module.exports = { authenticate, requireUserType, sellerScope, requireApprovedSeller, requireSellerRole, can };
