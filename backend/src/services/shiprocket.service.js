@@ -212,7 +212,7 @@ async function syncShipmentStatus(sellerOrderId) {
   const activities = tracking?.tracking_data?.shipment_track_activities || [];
   for (const activity of activities) {
     await db.query(
-      `INSERT INTO shipment_tracking (shipment_id, status, location, note, tracked_at)
+      `INSERT IGNORE INTO shipment_tracking (shipment_id, status, location, note, tracked_at)
        VALUES (:shipmentId, :status, :location, :note, :trackedAt)`,
       {
         shipmentId: shipment.id, status: activity.status || 'UPDATE', location: activity.location || null,

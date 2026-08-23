@@ -51,6 +51,17 @@ async function getById(req, res, next) {
     );
     for (const so of sellerOrders) {
       so.items = await db.query('SELECT * FROM order_items WHERE seller_order_id = :id', { id: so.id });
+      so.shipment = await db.queryOne('SELECT * FROM shipments WHERE seller_order_id = :id', { id: so.id });
+      so.tracking = so.shipment
+        ? await db.query(
+            'SELECT status, location, note, tracked_at FROM shipment_tracking WHERE shipment_id = :id ORDER BY tracked_at ASC',
+            { id: so.shipment.id }
+          )
+        : [];
+      so.statusHistory = await db.query(
+        'SELECT status, note, changed_at FROM order_status_history WHERE seller_order_id = :id ORDER BY changed_at ASC',
+        { id: so.id }
+      );
     }
     const payments = await db.query('SELECT * FROM payment_transactions WHERE order_id = :orderId', { orderId: order.id });
 

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Box, Typography, Paper, Divider, Grid, CircularProgress } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import StatusBadge from '../../components/StatusBadge';
+import ShipmentPanel from '../../components/admin/ShipmentPanel';
 import * as adminOrderService from '../../services/adminOrder.service';
 
 function formatINR(value) {
@@ -51,6 +52,8 @@ export default function AdminOrderDetail() {
               <Box sx={{ display: 'flex', justifyContent: 'space-between' }}><Typography variant="subtitle2">Seller Payable</Typography><Typography variant="subtitle2">{formatINR(so.seller_payable)}</Typography></Box>
             </Grid>
           </Grid>
+
+          <ShipmentPanel sellerOrderId={so.id} initialShipment={so.shipment} initialTracking={so.tracking} />
         </Paper>
       ))}
 

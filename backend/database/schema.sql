@@ -747,6 +747,7 @@ CREATE TABLE shipment_tracking (
   note          VARCHAR(255) NULL,
   tracked_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   KEY idx_shipment_tracking_shipment (shipment_id),
+  UNIQUE KEY uq_shipment_tracking_event (shipment_id, status, tracked_at),
   CONSTRAINT fk_shipment_tracking_shipment FOREIGN KEY (shipment_id) REFERENCES shipments(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 

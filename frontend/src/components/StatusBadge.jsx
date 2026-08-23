@@ -10,6 +10,10 @@ const STATUS_COLORS = {
   REJECTED: 'error', CANCELLED: 'error', BLOCKED: 'error', SUSPENDED: 'error',
   FAILED: 'error', EXPIRED: 'error', INACTIVE: 'default',
   RETURN_REQUESTED: 'warning', RETURNED: 'default', REFUNDED: 'info', OUT_OF_STOCK: 'error',
+  // shipment lifecycle
+  SHIPMENT_CREATED: 'info', AWB_ASSIGNED: 'info', PICKUP_REQUESTED: 'warning',
+  PICKED_UP: 'warning', IN_TRANSIT: 'warning',
+  RTO_INITIATED: 'error', RTO_IN_TRANSIT: 'error', RTO_DELIVERED: 'error',
 };
 
 const MUI_COLOR_MAP = {

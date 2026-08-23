@@ -17,6 +17,7 @@ const adminUserRoutes = require('./admin/adminUser.routes');
 const adminRoleRoutes = require('./admin/role.routes');
 const adminCustomerRoutes = require('./admin/customer.routes');
 const adminOrderRoutes = require('./admin/order.routes');
+const adminShipmentRoutes = require('./admin/shipment.routes');
 
 const router = express.Router();
 
@@ -38,6 +39,7 @@ router.use('/admin/users', adminUserRoutes);
 router.use('/admin/roles', adminRoleRoutes);
 router.use('/admin/customers', adminCustomerRoutes);
 router.use('/admin/orders', adminOrderRoutes);
+router.use('/admin/shipments', adminShipmentRoutes);
 
 // Phase 1 (remaining): payments gateway integration, returns/refunds — mounted here as each ships.
 
