@@ -499,6 +499,7 @@ CREATE TABLE orders (
   public_id           CHAR(36) NOT NULL,
   order_number        VARCHAR(30) NOT NULL,
   customer_id         INT UNSIGNED NOT NULL,
+  payment_method      ENUM('ONLINE','COD') NOT NULL DEFAULT 'COD',
   shipping_name       VARCHAR(150) NOT NULL,
   shipping_mobile     VARCHAR(15) NOT NULL,
   shipping_address1   VARCHAR(255) NOT NULL,
@@ -511,8 +512,9 @@ CREATE TABLE orders (
   discount            DECIMAL(12,2) NOT NULL DEFAULT 0,
   tax                 DECIMAL(12,2) NOT NULL DEFAULT 0,
   shipping_charge     DECIMAL(12,2) NOT NULL DEFAULT 0,
+  cod_charge          DECIMAL(12,2) NOT NULL DEFAULT 0,
   grand_total         DECIMAL(12,2) NOT NULL,
-  payment_status      ENUM('PENDING','AUTHORIZED','SUCCESS','FAILED','REFUNDED','PARTIAL_REFUND') NOT NULL DEFAULT 'PENDING',
+  payment_status      ENUM('CREATED','PENDING','AUTHORIZED','PAID','FAILED','CANCELLED','REFUNDED','PARTIAL_REFUND') NOT NULL DEFAULT 'PENDING',
   status              ENUM('PLACED','CONFIRMED','PARTIALLY_FULFILLED','COMPLETED','CANCELLED','EXPIRED') NOT NULL DEFAULT 'PLACED',
   idempotency_key     VARCHAR(80) NOT NULL,
   placed_at           DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -600,14 +602,19 @@ CREATE TABLE payment_transactions (
   gateway_id       INT UNSIGNED NULL,
   method           ENUM('ONLINE','COD') NOT NULL,
   amount           DECIMAL(12,2) NOT NULL,
-  status           ENUM('PENDING','AUTHORIZED','SUCCESS','FAILED','REFUNDED','PARTIAL_REFUND') NOT NULL DEFAULT 'PENDING',
+  status           ENUM('CREATED','PENDING','AUTHORIZED','PAID','FAILED','CANCELLED','REFUNDED','PARTIAL_REFUND') NOT NULL DEFAULT 'PENDING',
   gateway_txn_id   VARCHAR(100) NULL,
+  razorpay_order_id    VARCHAR(100) NULL,
+  razorpay_payment_id  VARCHAR(100) NULL,
+  razorpay_signature   VARCHAR(255) NULL,
+  failure_reason   VARCHAR(255) NULL,
   idempotency_key  VARCHAR(100) NOT NULL,
   raw_response     JSON NULL,
   created_at       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   UNIQUE KEY uq_payment_transactions_idempotency_key (idempotency_key),
   KEY idx_payment_transactions_order (order_id),
+  KEY idx_payment_transactions_razorpay_order (razorpay_order_id),
   CONSTRAINT fk_payment_transactions_order FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
   CONSTRAINT fk_payment_transactions_gateway FOREIGN KEY (gateway_id) REFERENCES payment_gateways(id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
@@ -701,17 +708,33 @@ CREATE TABLE return_images (
 ) ENGINE=InnoDB;
 
 CREATE TABLE shipments (
-  id                   INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  seller_order_id      INT UNSIGNED NOT NULL,
-  courier_name         VARCHAR(100) NULL,
-  tracking_number      VARCHAR(100) NULL,
-  method               ENUM('STANDARD','EXPRESS','SELLER_PICKUP') NOT NULL DEFAULT 'STANDARD',
-  charge               DECIMAL(12,2) NOT NULL DEFAULT 0,
-  estimated_delivery   DATE NULL,
-  status               ENUM('PENDING','SHIPPED','IN_TRANSIT','OUT_FOR_DELIVERY','DELIVERED','FAILED') NOT NULL DEFAULT 'PENDING',
-  created_at           DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at           DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  id                     INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  seller_order_id        INT UNSIGNED NOT NULL,
+  shiprocket_order_id    VARCHAR(50) NULL,
+  shiprocket_shipment_id VARCHAR(50) NULL,
+  courier_name           VARCHAR(100) NULL,
+  courier_id             VARCHAR(50) NULL,
+  tracking_number        VARCHAR(100) NULL,
+  tracking_url           VARCHAR(255) NULL,
+  method                 ENUM('STANDARD','EXPRESS','SELLER_PICKUP') NOT NULL DEFAULT 'STANDARD',
+  charge                 DECIMAL(12,2) NOT NULL DEFAULT 0,
+  cod_amount             DECIMAL(12,2) NOT NULL DEFAULT 0,
+  label_url              VARCHAR(255) NULL,
+  estimated_delivery     DATE NULL,
+  pickup_date            DATE NULL,
+  shipped_date           DATE NULL,
+  delivered_date         DATE NULL,
+  rto_date               DATE NULL,
+  rto_reason             VARCHAR(255) NULL,
+  status                 ENUM(
+    'PENDING','SHIPMENT_CREATED','AWB_ASSIGNED','PICKUP_REQUESTED','PICKED_UP','SHIPPED',
+    'IN_TRANSIT','OUT_FOR_DELIVERY','DELIVERED','CANCELLED','FAILED',
+    'RTO_INITIATED','RTO_IN_TRANSIT','RTO_DELIVERED'
+  ) NOT NULL DEFAULT 'PENDING',
+  created_at             DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at             DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   UNIQUE KEY uq_shipments_seller_order (seller_order_id),
+  KEY idx_shipments_shiprocket_order (shiprocket_order_id),
   CONSTRAINT fk_shipments_seller_order FOREIGN KEY (seller_order_id) REFERENCES seller_orders(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
@@ -735,6 +758,7 @@ CREATE TABLE refunds (
   seller_order_id          INT UNSIGNED NOT NULL,
   order_item_id            INT UNSIGNED NULL,
   payment_transaction_id   INT UNSIGNED NOT NULL,
+  razorpay_refund_id       VARCHAR(100) NULL,
   return_id                INT UNSIGNED NULL,
   amount                   DECIMAL(12,2) NOT NULL,
   status                   ENUM('PENDING','PROCESSING','COMPLETED','FAILED') NOT NULL DEFAULT 'PENDING',
@@ -747,6 +771,58 @@ CREATE TABLE refunds (
   CONSTRAINT fk_refunds_order_item FOREIGN KEY (order_item_id) REFERENCES order_items(id) ON DELETE SET NULL,
   CONSTRAINT fk_refunds_payment_transaction FOREIGN KEY (payment_transaction_id) REFERENCES payment_transactions(id) ON DELETE RESTRICT,
   CONSTRAINT fk_refunds_return FOREIGN KEY (return_id) REFERENCES returns(id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+-- ============================================================
+-- COD & WEBHOOK IDEMPOTENCY
+-- ============================================================
+
+CREATE TABLE cod_transactions (
+  id                 INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  seller_order_id    INT UNSIGNED NOT NULL,
+  cod_amount         DECIMAL(12,2) NOT NULL,
+  cod_charges        DECIMAL(12,2) NOT NULL DEFAULT 0,
+  courier_charge     DECIMAL(12,2) NOT NULL DEFAULT 0,
+  remittance_amount  DECIMAL(12,2) NULL,
+  status             ENUM('COD_PENDING','COD_CONFIRMED','COD_COLLECTED','COD_REMITTED','COD_SETTLEMENT_PENDING','COD_SETTLED','COD_FAILED','COD_RTO') NOT NULL DEFAULT 'COD_PENDING',
+  collected_at       DATETIME NULL,
+  created_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_cod_transactions_seller_order (seller_order_id),
+  CONSTRAINT fk_cod_transactions_seller_order FOREIGN KEY (seller_order_id) REFERENCES seller_orders(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE cod_remittances (
+  id                     INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  courier_name           VARCHAR(100) NOT NULL,
+  remittance_reference   VARCHAR(100) NULL,
+  total_amount           DECIMAL(14,2) NOT NULL DEFAULT 0,
+  remittance_date        DATE NULL,
+  status                 ENUM('EXPECTED','PENDING','SETTLED','PARTIAL','FAILED') NOT NULL DEFAULT 'EXPECTED',
+  raw_response           JSON NULL,
+  created_at             DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE cod_remittance_items (
+  id                  INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  remittance_id       INT UNSIGNED NOT NULL,
+  cod_transaction_id  INT UNSIGNED NOT NULL,
+  amount              DECIMAL(12,2) NOT NULL,
+  KEY idx_cod_remittance_items_remittance (remittance_id),
+  CONSTRAINT fk_cod_remittance_items_remittance FOREIGN KEY (remittance_id) REFERENCES cod_remittances(id) ON DELETE CASCADE,
+  CONSTRAINT fk_cod_remittance_items_transaction FOREIGN KEY (cod_transaction_id) REFERENCES cod_transactions(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE webhook_events (
+  id                  BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  source              ENUM('RAZORPAY','SHIPROCKET') NOT NULL,
+  event_type          VARCHAR(60) NOT NULL,
+  external_event_id   VARCHAR(150) NOT NULL,
+  payload             JSON NULL,
+  status              ENUM('RECEIVED','PROCESSED','FAILED','DUPLICATE') NOT NULL DEFAULT 'RECEIVED',
+  processed_at        DATETIME NULL,
+  created_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_webhook_events_source_external_id (source, external_event_id)
 ) ENGINE=InnoDB;
 
 -- ============================================================
