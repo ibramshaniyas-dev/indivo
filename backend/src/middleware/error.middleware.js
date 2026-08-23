@@ -2,6 +2,7 @@ const env = require('../config/env');
 const logger = require('../utils/logger');
 const { error } = require('../utils/response');
 const ApiError = require('../utils/ApiError');
+const { ShiprocketApiError } = require('../services/shiprocketClient');
 
 const MYSQL_ERROR_MAP = {
   ER_DUP_ENTRY: { status: 409, message: 'A record with these details already exists' },
@@ -16,6 +17,15 @@ function notFound(req, res) {
 function errorHandler(err, req, res, next) { // eslint-disable-line no-unused-vars
   if (err instanceof ApiError) {
     return error(res, { status: err.status, message: err.message, errors: err.errors });
+  }
+
+  // Surface the real reason Shiprocket rejected the call (KYC pending, unserviceable pincode,
+  // etc.) instead of a generic 500 — these are actionable, not bugs, and the admin/seller panel
+  // needs the actual message to know what to fix. Shiprocket's own 4xx status passes through;
+  // anything else (network error, 5xx from their side) becomes a 502 (this server's upstream failed).
+  if (err instanceof ShiprocketApiError) {
+    const status = err.status >= 400 && err.status < 500 ? err.status : 502;
+    return error(res, { status, message: err.message });
   }
 
   if (err.name === 'MulterError') {
