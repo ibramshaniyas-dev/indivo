@@ -16,6 +16,8 @@ import SuperAdminLogin from './pages/auth/SuperAdminLogin';
 import SellerRegister from './pages/seller/Register';
 import OnboardingWizard from './pages/seller/OnboardingWizard';
 import SellerDashboard from './pages/seller/Dashboard';
+import SellerProducts from './pages/seller/Products';
+import SellerProductForm from './pages/seller/ProductForm';
 
 import AdminDashboard from './pages/admin/Dashboard';
 import SellerApprovals from './pages/admin/SellerApprovals';
@@ -81,6 +83,12 @@ export default function App() {
         >
           <Route path="/seller/onboarding" element={<OnboardingWizard />} />
           <Route path="/seller/dashboard" element={<SellerDashboard />} />
+          <Route path="/seller/products" element={<SellerProducts />} />
+          <Route path="/seller/products/new" element={<SellerProductForm />} />
+          <Route path="/seller/products/:id/edit" element={<SellerProductForm />} />
+          <Route path="/seller/inventory" element={<ComingSoon title="Inventory" />} />
+          <Route path="/seller/orders" element={<ComingSoon title="Orders" />} />
+          <Route path="/seller/profile" element={<ComingSoon title="Profile & Settings" />} />
         </Route>
 
         <Route
