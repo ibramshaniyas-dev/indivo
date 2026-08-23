@@ -26,8 +26,13 @@ const MODULES = {
   notifications: ['view', 'create'],
 };
 
+// Admin user/role/permission and platform settings management is reserved for SUPER_ADMIN by
+// default (spec: "Super Admin should be the ONLY role by default that can manage Admin Users,
+// Roles, Permissions, System Settings") — no seeded starter role below is granted these modules.
+const SUPER_ADMIN_ONLY_MODULES = ['users', 'roles', 'settings'];
+
 const ROLE_MODULE_ACCESS = {
-  MANAGER: Object.keys(MODULES),
+  MANAGER: Object.keys(MODULES).filter((m) => !SUPER_ADMIN_ONLY_MODULES.includes(m)),
   SUPPORT_ADMIN: ['customers', 'orders', 'returns', 'refunds', 'reviews', 'notifications'],
   PRODUCT_ADMIN: ['products', 'categories', 'brands', 'attributes', 'reviews'],
   ORDER_ADMIN: ['orders', 'payments', 'returns', 'refunds'],
@@ -36,4 +41,4 @@ const ROLE_MODULE_ACCESS = {
   CONTENT_ADMIN: ['cms', 'coupons'],
 };
 
-module.exports = { MODULES, ROLE_MODULE_ACCESS };
+module.exports = { MODULES, ROLE_MODULE_ACCESS, SUPER_ADMIN_ONLY_MODULES };

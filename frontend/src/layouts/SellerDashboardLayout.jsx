@@ -12,7 +12,7 @@ export default function SellerDashboardLayout() {
   const handleLogout = async () => {
     await logout();
     dispatch(clearUser());
-    navigate('/login');
+    navigate('/seller/login');
   };
 
   return (

@@ -5,16 +5,7 @@ const ApiError = require('../utils/ApiError');
 const { success } = require('../utils/response');
 const { signAccessToken, signRefreshToken, verifyRefreshToken } = require('../utils/token');
 const { sha256 } = require('../utils/hash');
-
-function sanitizeUser(user, extra = {}) {
-  return {
-    id: user.id,
-    mobile: user.mobile,
-    email: user.email,
-    userType: user.user_type,
-    ...extra,
-  };
-}
+const { loadUserProfile } = require('../services/authProfile.service');
 
 async function issueTokens(user) {
   const accessToken = signAccessToken(user);
@@ -54,47 +45,40 @@ async function registerCustomer(req, res, next) {
     return success(res, {
       status: 201,
       message: 'Registration successful',
-      data: { user: sanitizeUser(user), ...tokens },
+      data: { user: await loadUserProfile(user), ...tokens },
     });
   } catch (err) {
     return next(err);
   }
 }
 
+/**
+ * Unified login for every portal (customer/seller/admin/super-admin). `identifier` matches
+ * either mobile or email — customers/sellers conventionally sign in with mobile, admins with
+ * email, but either works for any account type so a portal is free to ask for whichever fits
+ * its audience. The portal itself is a frontend concept; this endpoint doesn't gate by userType
+ * — the caller checks `user.userType`/`user.isSuperAdmin` in the response and rejects a mismatch
+ * client-side, while every actual API is still independently authorized server-side.
+ */
 async function login(req, res, next) {
   try {
-    const { mobile, password } = req.body;
+    const { identifier, password } = req.body;
 
     const user = await db.queryOne(
-      'SELECT id, mobile, email, password_hash, user_type, status FROM users WHERE mobile = :mobile',
-      { mobile }
+      'SELECT id, name, mobile, email, password_hash, user_type, status FROM users WHERE mobile = :identifier OR email = :identifier',
+      { identifier }
     );
-    if (!user) throw ApiError.unauthorized('Invalid mobile number or password');
+    if (!user) throw ApiError.unauthorized('Invalid credentials');
 
     const matches = await bcrypt.compare(password, user.password_hash);
-    if (!matches) throw ApiError.unauthorized('Invalid mobile number or password');
+    if (!matches) throw ApiError.unauthorized('Invalid credentials');
 
     if (user.status !== 'ACTIVE') throw ApiError.forbidden('Your account is not active');
-
-    const extra = {};
-    if (user.user_type === 'SELLER_STAFF') {
-      const sellerUser = await db.queryOne(
-        `SELECT su.seller_id, su.seller_role, su.status AS seller_user_status, s.status AS seller_status
-         FROM seller_users su JOIN sellers s ON s.id = su.seller_id
-         WHERE su.user_id = :id`,
-        { id: user.id }
-      );
-      if (sellerUser) {
-        extra.sellerId = sellerUser.seller_id;
-        extra.sellerRole = sellerUser.seller_role;
-        extra.sellerStatus = sellerUser.seller_status;
-      }
-    }
 
     const tokens = await issueTokens(user);
     return success(res, {
       message: 'Login successful',
-      data: { user: sanitizeUser(user, extra), ...tokens },
+      data: { user: await loadUserProfile(user), ...tokens },
     });
   } catch (err) {
     return next(err);
@@ -113,7 +97,7 @@ async function refresh(req, res, next) {
     }
 
     const user = await db.queryOne(
-      'SELECT id, mobile, email, user_type, status, refresh_token_hash FROM users WHERE id = :id',
+      'SELECT id, name, mobile, email, user_type, status, refresh_token_hash FROM users WHERE id = :id',
       { id: payload.sub }
     );
     if (!user || user.status !== 'ACTIVE') throw ApiError.unauthorized('Account no longer active');

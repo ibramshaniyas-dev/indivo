@@ -1,6 +1,6 @@
 import api from './api';
 
-function persistSession({ user, accessToken, refreshToken }) {
+export function persistSession({ user, accessToken, refreshToken }) {
   localStorage.setItem('accessToken', accessToken);
   localStorage.setItem('refreshToken', refreshToken);
   localStorage.setItem('user', JSON.stringify(user));
@@ -12,10 +12,12 @@ export async function registerCustomer(payload) {
   return data.data.user;
 }
 
+/** Authenticates but does NOT persist the session — callers must verify the account belongs
+ *  in their portal (userType / isSuperAdmin) before calling persistSession, so a customer
+ *  can't end up with a lingering session from the admin login form, etc. */
 export async function login(payload) {
   const { data } = await api.post('/auth/login', payload);
-  persistSession(data.data);
-  return data.data.user;
+  return data.data;
 }
 
 export async function logout() {

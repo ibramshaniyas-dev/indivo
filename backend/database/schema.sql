@@ -12,6 +12,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 CREATE TABLE users (
   id                  INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  name                VARCHAR(150) NULL,
   mobile              VARCHAR(15) NOT NULL,
   email               VARCHAR(150) NULL,
   password_hash       VARCHAR(255) NOT NULL,
@@ -28,6 +29,7 @@ CREATE TABLE users (
 CREATE TABLE roles (
   id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   name        VARCHAR(100) NOT NULL,
+  description VARCHAR(255) NULL,
   scope       ENUM('ADMIN','SELLER') NOT NULL DEFAULT 'ADMIN',
   seller_id   INT UNSIGNED NULL,
   is_system   TINYINT(1) NOT NULL DEFAULT 0,

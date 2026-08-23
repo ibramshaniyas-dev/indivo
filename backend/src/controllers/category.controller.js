@@ -27,10 +27,10 @@ async function list(req, res, next) {
     const { status, parentId } = req.query;
     const conditions = [];
     const params = {};
-    if (status) {
+    if (status && status !== 'ALL') {
       conditions.push('status = :status');
       params.status = status;
-    } else {
+    } else if (!status) {
       conditions.push("status = 'ACTIVE'");
     }
     if (parentId === 'null') {

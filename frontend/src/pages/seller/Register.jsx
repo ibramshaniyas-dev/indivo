@@ -79,7 +79,7 @@ export default function SellerRegister() {
             {loading ? 'Creating account…' : 'Create Seller Account'}
           </Button>
           <Typography variant="body2" sx={{ mt: 2 }}>
-            Already registered? <Link to="/login">Login</Link>
+            Already registered? <Link to="/seller/login">Login</Link>
           </Typography>
         </Box>
       </Paper>

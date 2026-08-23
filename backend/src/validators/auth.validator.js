@@ -18,7 +18,10 @@ const registerCustomer = [
   body('gender').optional({ values: 'falsy' }).isIn(['MALE', 'FEMALE', 'OTHER']).withMessage('Invalid gender'),
 ];
 
-const login = [mobileRule, body('password').notEmpty().withMessage('Password is required')];
+const login = [
+  body('identifier').trim().notEmpty().withMessage('Mobile number or email is required'),
+  body('password').notEmpty().withMessage('Password is required'),
+];
 
 const refresh = [body('refreshToken').notEmpty().withMessage('Refresh token is required')];
 

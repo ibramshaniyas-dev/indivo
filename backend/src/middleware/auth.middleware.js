@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const env = require('../config/env');
 const db = require('../config/database');
 const ApiError = require('../utils/ApiError');
+const { loadUserProfile } = require('../services/authProfile.service');
 
 function extractToken(req) {
   const header = req.headers.authorization;
@@ -27,38 +28,13 @@ async function authenticate(req, res, next) {
     }
 
     const user = await db.queryOne(
-      'SELECT id, mobile, email, user_type, status FROM users WHERE id = :id',
+      'SELECT id, name, mobile, email, user_type, status FROM users WHERE id = :id',
       { id: payload.sub }
     );
     if (!user) throw ApiError.unauthorized('User no longer exists');
     if (user.status !== 'ACTIVE') throw ApiError.forbidden('Account is not active');
 
-    req.user = {
-      id: user.id,
-      mobile: user.mobile,
-      email: user.email,
-      userType: user.user_type,
-    };
-
-    if (user.user_type === 'CUSTOMER') {
-      const customer = await db.queryOne('SELECT id FROM customers WHERE user_id = :id', { id: user.id });
-      if (customer) req.user.customerId = customer.id;
-    }
-
-    if (user.user_type === 'SELLER_STAFF') {
-      const sellerUser = await db.queryOne(
-        `SELECT su.seller_id, su.seller_role, su.status AS seller_user_status, s.status AS seller_status
-         FROM seller_users su JOIN sellers s ON s.id = su.seller_id
-         WHERE su.user_id = :id`,
-        { id: user.id }
-      );
-      if (sellerUser) {
-        req.user.sellerId = sellerUser.seller_id;
-        req.user.sellerRole = sellerUser.seller_role;
-        req.user.sellerUserStatus = sellerUser.seller_user_status;
-        req.user.sellerStatus = sellerUser.seller_status;
-      }
-    }
+    req.user = await loadUserProfile(user);
 
     return next();
   } catch (err) {

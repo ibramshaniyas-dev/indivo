@@ -73,9 +73,9 @@ async function seedSuperAdminUser(superAdminRoleId) {
   if (!userId) {
     const passwordHash = await bcrypt.hash(password, env.bcryptRounds);
     const result = await db.query(
-      `INSERT INTO users (mobile, email, password_hash, user_type, status)
-       VALUES (:mobile, :email, :passwordHash, 'ADMIN', 'ACTIVE')`,
-      { mobile, email: email || null, passwordHash }
+      `INSERT INTO users (name, mobile, email, password_hash, user_type, status)
+       VALUES (:name, :mobile, :email, :passwordHash, 'ADMIN', 'ACTIVE')`,
+      { name, mobile, email: email || null, passwordHash }
     );
     userId = result.insertId;
     console.log(`Created super admin user (${name}) with mobile ${mobile}`);

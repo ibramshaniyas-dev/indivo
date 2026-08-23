@@ -23,7 +23,9 @@ async function uniqueSlug(name, excludeId) {
 async function list(req, res, next) {
   try {
     const status = req.query.status || 'ACTIVE';
-    const brands = await db.query('SELECT * FROM brands WHERE status = :status ORDER BY name ASC', { status });
+    const brands = status === 'ALL'
+      ? await db.query('SELECT * FROM brands ORDER BY name ASC')
+      : await db.query('SELECT * FROM brands WHERE status = :status ORDER BY name ASC', { status });
     return success(res, { data: brands });
   } catch (err) {
     return next(err);
