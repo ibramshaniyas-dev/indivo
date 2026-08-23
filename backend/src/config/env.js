@@ -50,6 +50,22 @@ module.exports = {
 
   order: {
     unpaidExpiryMinutes: parseInt(process.env.UNPAID_ORDER_EXPIRY_MINUTES, 10) || 30,
+    codChargeDefault: parseFloat(process.env.COD_CHARGE_DEFAULT) || 0,
+  },
+
+  shiprocket: {
+    email: process.env.SHIPROCKET_EMAIL || '',
+    password: process.env.SHIPROCKET_PASSWORD || '',
+    baseUrl: process.env.SHIPROCKET_BASE_URL || 'https://apiv2.shiprocket.in/v1/external',
+  },
+
+  razorpay: {
+    keyId: process.env.RAZORPAY_KEY_ID || '',
+    keySecret: process.env.RAZORPAY_KEY_SECRET || '',
+    webhookSecret: process.env.RAZORPAY_WEBHOOK_SECRET || '',
+    get isConfigured() {
+      return Boolean(this.keyId && this.keySecret);
+    },
   },
 
   superAdmin: {
