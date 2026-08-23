@@ -5,6 +5,11 @@ export async function listShipments(params) {
   return data;
 }
 
+export async function getShipmentCounts() {
+  const { data } = await api.get('/admin/shipments/counts');
+  return data.data;
+}
+
 export async function getShipment(sellerOrderId) {
   const { data } = await api.get(`/admin/shipments/${sellerOrderId}`);
   return data.data;

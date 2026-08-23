@@ -8,6 +8,7 @@ const router = express.Router();
 router.use(authenticate, requireUserType('ADMIN'), can('orders', 'edit'));
 
 router.get('/', controller.list);
+router.get('/counts', controller.counts);
 router.get('/:sellerOrderId', controller.getShipment);
 router.post('/:sellerOrderId/create', controller.createShipment);
 router.get('/:sellerOrderId/couriers', controller.getCouriers);

@@ -1,36 +1,48 @@
 import { useEffect, useState } from 'react';
-import { Box, Typography, MenuItem, TextField } from '@mui/material';
+import { Box, Typography, Tabs, Tab, Badge } from '@mui/material';
 import { Link } from 'react-router-dom';
 import DataTable from '../../components/DataTable';
 import StatusBadge from '../../components/StatusBadge';
 import * as adminShipmentService from '../../services/adminShipment.service';
 
-const STATUS_FILTERS = [
-  '', 'NOT_CREATED', 'SHIPMENT_CREATED', 'AWB_ASSIGNED', 'PICKUP_REQUESTED', 'PICKED_UP',
-  'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED', 'RTO_INITIATED', 'RTO_IN_TRANSIT', 'RTO_DELIVERED',
+// Mirrors Shiprocket's own seller-panel tabs (New / Ready To Ship / Pickup / In Transit /
+// Delivered / RTO / All Orders) so this reads the same way for anyone used to that dashboard.
+const TABS = [
+  { key: 'NEW', label: 'New' },
+  { key: 'READY_TO_SHIP', label: 'Ready To Ship' },
+  { key: 'PICKUP', label: 'Pickup' },
+  { key: 'IN_TRANSIT', label: 'In Transit' },
+  { key: 'DELIVERED', label: 'Delivered' },
+  { key: 'RTO', label: 'RTO' },
+  { key: 'ALL', label: 'All Orders' },
 ];
 
 export default function AdminShipments() {
+  const [bucket, setBucket] = useState('ALL');
   const [rows, setRows] = useState([]);
   const [meta, setMeta] = useState({ total: 0, page: 1, limit: 20 });
-  const [status, setStatus] = useState('');
+  const [counts, setCounts] = useState({});
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
 
-  const load = async (page = meta.page, limit = meta.limit) => {
+  const load = async (page = 1, limit = meta.limit) => {
     setLoading(true);
     try {
-      const { data, meta: m } = await adminShipmentService.listShipments({
-        status: status || undefined, search: search || undefined, page, limit,
-      });
+      const [{ data, meta: m }, countsData] = await Promise.all([
+        adminShipmentService.listShipments({
+          bucket: bucket === 'ALL' ? undefined : bucket, search: search || undefined, page, limit,
+        }),
+        adminShipmentService.getShipmentCounts(),
+      ]);
       setRows(data);
       setMeta(m);
+      setCounts(countsData);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { load(1); }, [status, search]);
+  useEffect(() => { load(1); }, [bucket, search]);
 
   const columns = [
     {
@@ -61,6 +73,32 @@ export default function AdminShipments() {
   return (
     <Box>
       <Typography variant="h5" gutterBottom>Shipments &amp; Tracking</Typography>
+
+      <Tabs
+        value={bucket}
+        onChange={(e, val) => setBucket(val)}
+        variant="scrollable"
+        scrollButtons="auto"
+        sx={{ mb: 2, borderBottom: 1, borderColor: 'divider' }}
+      >
+        {TABS.map((t) => (
+          <Tab
+            key={t.key}
+            value={t.key}
+            label={
+              <Badge
+                badgeContent={counts[t.key] ?? 0}
+                color="primary"
+                max={999}
+                sx={{ '& .MuiBadge-badge': { position: 'static', transform: 'none', ml: 1 } }}
+              >
+                {t.label}
+              </Badge>
+            }
+          />
+        ))}
+      </Tabs>
+
       <DataTable
         columns={columns}
         rows={rows}
@@ -73,11 +111,6 @@ export default function AdminShipments() {
         onLimitChange={(l) => load(1, l)}
         onSearch={setSearch}
         searchPlaceholder="Search order, AWB, customer or seller"
-        filters={
-          <TextField select size="small" label="Shipment Status" value={status} onChange={(e) => setStatus(e.target.value)} sx={{ minWidth: 200 }}>
-            {STATUS_FILTERS.map((s) => <MenuItem key={s || 'ALL'} value={s}>{s ? s.replace(/_/g, ' ') : 'ALL'}</MenuItem>)}
-          </TextField>
-        }
       />
     </Box>
   );

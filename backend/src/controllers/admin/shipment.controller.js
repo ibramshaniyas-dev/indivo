@@ -13,6 +13,33 @@ async function loadSellerOrder(sellerOrderId) {
   return sellerOrder;
 }
 
+// Mirrors Shiprocket's own seller-panel tabs (New / Ready To Ship / Pickup / In Transit /
+// Delivered / RTO / All Orders) so the admin Shipments page reads the same way. NOT_CREATED is a
+// virtual status (sh.id IS NULL, no shipments row yet) folded into "New" alongside
+// SHIPMENT_CREATED, since both mean "needs a shipping action next."
+const STATUS_BUCKETS = {
+  NEW: ['NOT_CREATED', 'SHIPMENT_CREATED'],
+  READY_TO_SHIP: ['AWB_ASSIGNED'],
+  PICKUP: ['PICKUP_REQUESTED'],
+  IN_TRANSIT: ['PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY'],
+  DELIVERED: ['DELIVERED'],
+  RTO: ['RTO_INITIATED', 'RTO_IN_TRANSIT', 'RTO_DELIVERED'],
+};
+
+/** Builds the SQL condition (and binds params) for a bucket key; returns null for 'ALL'/unknown. */
+function bucketCondition(bucket, params) {
+  const statuses = STATUS_BUCKETS[bucket];
+  if (!statuses) return null;
+  const parts = [];
+  if (statuses.includes('NOT_CREATED')) parts.push('sh.id IS NULL');
+  const realStatuses = statuses.filter((s) => s !== 'NOT_CREATED');
+  if (realStatuses.length) {
+    parts.push('sh.status IN (:bucketStatuses)');
+    params.bucketStatuses = realStatuses;
+  }
+  return `(${parts.join(' OR ')})`;
+}
+
 /**
  * Every seller_order, LEFT JOINed to its shipment — so orders that never had a shipment created
  * yet still show up (as NOT_CREATED) instead of only surfacing ones an admin already acted on.
@@ -27,7 +54,10 @@ async function list(req, res, next) {
 
     const conditions = [];
     const params = {};
-    if (req.query.status === 'NOT_CREATED') {
+    const bucketWhere = req.query.bucket ? bucketCondition(req.query.bucket, params) : null;
+    if (bucketWhere) {
+      conditions.push(bucketWhere);
+    } else if (req.query.status === 'NOT_CREATED') {
       conditions.push('sh.id IS NULL');
     } else if (req.query.status) {
       conditions.push('sh.status = :status');
@@ -68,6 +98,33 @@ async function list(req, res, next) {
     );
 
     return success(res, { data: rows, meta: { page, limit, total: Number(total) } });
+  } catch (err) {
+    return next(err);
+  }
+}
+
+/** Counts per tab bucket, for the tab-header badges — independent of the current page/search. */
+async function counts(req, res, next) {
+  try {
+    const [row] = await db.query(
+      `SELECT
+         SUM(CASE WHEN sh.id IS NULL OR sh.status = 'SHIPMENT_CREATED' THEN 1 ELSE 0 END) AS NEW,
+         SUM(CASE WHEN sh.status = 'AWB_ASSIGNED' THEN 1 ELSE 0 END) AS READY_TO_SHIP,
+         SUM(CASE WHEN sh.status = 'PICKUP_REQUESTED' THEN 1 ELSE 0 END) AS PICKUP,
+         SUM(CASE WHEN sh.status IN ('PICKED_UP','IN_TRANSIT','OUT_FOR_DELIVERY') THEN 1 ELSE 0 END) AS IN_TRANSIT,
+         SUM(CASE WHEN sh.status = 'DELIVERED' THEN 1 ELSE 0 END) AS DELIVERED,
+         SUM(CASE WHEN sh.status IN ('RTO_INITIATED','RTO_IN_TRANSIT','RTO_DELIVERED') THEN 1 ELSE 0 END) AS RTO,
+         COUNT(*) AS ALL_ORDERS
+       FROM seller_orders so
+       LEFT JOIN shipments sh ON sh.seller_order_id = so.id`
+    );
+    return success(res, {
+      data: {
+        NEW: Number(row.NEW), READY_TO_SHIP: Number(row.READY_TO_SHIP), PICKUP: Number(row.PICKUP),
+        IN_TRANSIT: Number(row.IN_TRANSIT), DELIVERED: Number(row.DELIVERED), RTO: Number(row.RTO),
+        ALL: Number(row.ALL_ORDERS),
+      },
+    });
   } catch (err) {
     return next(err);
   }
@@ -199,4 +256,4 @@ async function cancelShipment(req, res, next) {
   }
 }
 
-module.exports = { list, getShipment, createShipment, getCouriers, generateAWB, requestPickup, generateLabel, trackShipment, cancelShipment };
+module.exports = { list, counts, getShipment, createShipment, getCouriers, generateAWB, requestPickup, generateLabel, trackShipment, cancelShipment };
