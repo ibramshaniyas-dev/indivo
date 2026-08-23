@@ -18,6 +18,9 @@ async function seedPermissions() {
   console.log(`Seeded ${Object.values(MODULES).flat().length} permissions`);
 }
 
+// Fully syncs role_permissions to `permissionCodes` (deletes anything no longer listed) so
+// re-running the seed after a starter-role definition changes doesn't leave stale, over-broad
+// grants behind — e.g. MANAGER losing access to `users`/`roles` must actually revoke it.
 async function seedRole(name, { isSystem = false, permissionCodes }) {
   await db.query(
     `INSERT INTO roles (name, scope, is_system) VALUES (:name, 'ADMIN', :isSystem)
@@ -29,12 +32,11 @@ async function seedRole(name, { isSystem = false, permissionCodes }) {
     { name }
   );
 
-  const permissions = await db.query(
-    permissionCodes.length
-      ? `SELECT id FROM permissions WHERE code IN (${permissionCodes.map(() => '?').join(',')})`
-      : 'SELECT id FROM permissions WHERE 1=0',
-    permissionCodes
-  );
+  await db.query('DELETE FROM role_permissions WHERE role_id = :roleId', { roleId: role.id });
+
+  const permissions = permissionCodes.length
+    ? await db.query('SELECT id FROM permissions WHERE code IN (:codes)', { codes: permissionCodes })
+    : [];
 
   for (const permission of permissions) {
     await db.query(
