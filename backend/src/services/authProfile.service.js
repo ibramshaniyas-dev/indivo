@@ -16,8 +16,14 @@ async function loadUserProfile(user) {
   };
 
   if (user.user_type === 'CUSTOMER') {
-    const customer = await db.queryOne('SELECT id FROM customers WHERE user_id = :id', { id: user.id });
-    if (customer) profile.customerId = customer.id;
+    // A customer's display name lives on `customers`, not `users.name` (that column is only
+    // populated for ADMIN accounts) — without this, the header/account UI has nothing but the
+    // mobile number to show.
+    const customer = await db.queryOne('SELECT id, name FROM customers WHERE user_id = :id', { id: user.id });
+    if (customer) {
+      profile.customerId = customer.id;
+      profile.name = customer.name;
+    }
     return profile;
   }
 

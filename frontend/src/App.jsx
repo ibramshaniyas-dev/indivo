@@ -14,6 +14,7 @@ import MyOrders from './pages/public/MyOrders';
 import OrderDetail from './pages/public/OrderDetail';
 import Wishlist from './pages/public/Wishlist';
 import Account from './pages/public/Account';
+import Addresses from './pages/public/Addresses';
 import CmsPage from './pages/public/CmsPage';
 import Contact from './pages/public/Contact';
 import Login from './pages/auth/Login';
@@ -95,7 +96,7 @@ export default function App() {
             <Route path="/account" element={<Account />} />
             <Route path="/account/orders" element={<MyOrders />} />
             <Route path="/account/orders/:id" element={<OrderDetail />} />
-            <Route path="/account/addresses" element={<ComingSoon title="Addresses" />} />
+            <Route path="/account/addresses" element={<Addresses />} />
             <Route path="/account/reviews" element={<ComingSoon title="My Reviews" />} />
           </Route>
         </Route>

@@ -2,12 +2,12 @@ require('dotenv').config();
 const db = require('../../src/config/database');
 
 const BANNERS = [
-  { title: "India's Best Collections", subtitle: 'Discover Something Special', cta: 'Shop Now', link: '/search' },
-  { title: 'Premium Fashion, One Destination', subtitle: 'Curated styles from India\'s finest sellers', cta: 'Explore Collections', link: '/search?category=1' },
-  { title: 'Discover Beautiful Fabrics', subtitle: 'Cotton, silk, linen and more', cta: 'Shop Fabrics', link: '/search' },
-  { title: 'Fragrances That Define You', subtitle: 'Royal ouds to fresh colognes', cta: 'Shop Perfumes', link: '/search' },
-  { title: 'Traditional Craft, Modern Style', subtitle: 'Handloom heritage, reimagined', cta: 'Shop Handloom', link: '/search' },
-  { title: 'Shop Premium Collections', subtitle: 'Fashion, fabrics, fragrances and lifestyle', cta: 'Start Shopping', link: '/search' },
+  { title: "India's Best Collections", subtitle: 'Discover Something Special', cta: 'Shop Now', link: '/search', keyword: 'fashion-model' },
+  { title: 'Premium Fashion, One Destination', subtitle: 'Curated styles from India\'s finest sellers', cta: 'Explore Collections', link: '/search', keyword: 'clothing-store' },
+  { title: 'Discover Beautiful Fabrics', subtitle: 'Cotton, silk, linen and more', cta: 'Shop Fabrics', link: '/search', keyword: 'fabric-texture' },
+  { title: 'Fragrances That Define You', subtitle: 'Royal ouds to fresh colognes', cta: 'Shop Perfumes', link: '/search', keyword: 'perfume-bottle' },
+  { title: 'Traditional Craft, Modern Style', subtitle: 'Handloom heritage, reimagined', cta: 'Shop Handloom', link: '/search', keyword: 'handloom-weaving' },
+  { title: 'Shop Premium Collections', subtitle: 'Fashion, fabrics, fragrances and lifestyle', cta: 'Start Shopping', link: '/search', keyword: 'boutique-shopping' },
 ];
 
 const HOMEPAGE_SECTIONS = [
@@ -33,7 +33,7 @@ async function run() {
       await db.query(
         `INSERT INTO banners (title, image, link, position, sort_order, status)
          VALUES (:title, :image, :link, 'HOME_HERO', :sortOrder, 'ACTIVE')`,
-        { title: `${b.title} — ${b.subtitle}`, image: `https://picsum.photos/seed/banner-${i}/1600/600`, link: b.link, sortOrder: i }
+        { title: `${b.title} — ${b.subtitle}`, image: `https://loremflickr.com/1600/600/${b.keyword}?lock=${100 + i}`, link: b.link, sortOrder: i }
       );
     }
     console.log(`${BANNERS.length} banners created`);

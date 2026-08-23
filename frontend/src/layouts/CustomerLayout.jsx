@@ -12,17 +12,15 @@ import CategoryRoundedIcon from '@mui/icons-material/CategoryRounded';
 import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded';
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { clearUser } from '../store/slices/authSlice';
-import { setCart, resetCart } from '../store/slices/cartSlice';
-import { setWishlist, resetWishlist } from '../store/slices/wishlistSlice';
-import { logout } from '../services/auth.service';
+import { setCart } from '../store/slices/cartSlice';
+import { setWishlist } from '../store/slices/wishlistSlice';
 import { getCart } from '../services/cart.service';
 import { getWishlist } from '../services/wishlist.service';
 
 const FOOTER_COLUMNS = [
   { title: 'INDIVO', links: [{ label: 'About Us', href: '/about' }] },
   { title: 'Customer Service', links: [{ label: 'Track Order', href: '/account/orders' }, { label: 'Contact Us', href: '/contact' }] },
-  { title: 'Sell on INDIVO', links: [{ label: 'Become a Seller', href: '/sell' }, { label: 'Seller Login', href: '/seller/login' }] },
+  { title: 'Sell on INDIVO', links: [{ label: 'Become a Seller', href: '/sell' }] },
 ];
 
 export default function CustomerLayout() {
@@ -38,14 +36,6 @@ export default function CustomerLayout() {
       getWishlist().then((items) => dispatch(setWishlist(items))).catch(() => {});
     }
   }, [isAuthenticated]);
-
-  const handleLogout = async () => {
-    await logout();
-    dispatch(clearUser());
-    dispatch(resetCart());
-    dispatch(resetWishlist());
-    navigate('/login');
-  };
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -103,29 +93,19 @@ export default function CustomerLayout() {
               </IconButton>
 
               {isAuthenticated ? (
-                <>
-                  <Button
-                    startIcon={<PersonOutlineRoundedIcon />}
-                    onClick={handleLogout}
-                    sx={{ display: { xs: 'none', sm: 'inline-flex' }, color: 'text.primary' }}
-                  >
-                    {user?.mobile}
-                  </Button>
-                </>
+                <Button
+                  startIcon={<PersonOutlineRoundedIcon />}
+                  component={Link}
+                  to="/account"
+                  sx={{ display: { xs: 'none', sm: 'inline-flex' }, color: 'text.primary' }}
+                >
+                  {user?.name || user?.mobile}
+                </Button>
               ) : (
                 <Button variant="contained" size="small" component={Link} to="/login" sx={{ ml: 1 }}>
                   Login
                 </Button>
               )}
-              <Button
-                component={Link}
-                to="/sell"
-                variant="outlined"
-                size="small"
-                sx={{ display: { xs: 'none', md: 'inline-flex' }, ml: 1 }}
-              >
-                Sell on INDIVO
-              </Button>
             </Box>
           </Toolbar>
         </Container>

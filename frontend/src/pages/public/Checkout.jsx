@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   Box, Container, Grid, Typography, Paper, TextField, Button, Divider, Alert,
-  RadioGroup, FormControlLabel, Radio, CircularProgress,
+  RadioGroup, FormControlLabel, Radio, CircularProgress, Chip,
 } from '@mui/material';
+import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { getCart } from '../../services/cart.service';
 import { placeOrder } from '../../services/checkout.service';
+import { listAddresses } from '../../services/customerAddress.service';
 import { setCart, resetCart } from '../../store/slices/cartSlice';
 
 function formatINR(value) {
@@ -20,6 +22,8 @@ export default function Checkout() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [savedAddresses, setSavedAddresses] = useState([]);
+  const [selectedAddressId, setSelectedAddressId] = useState(null); // null = new-address form
   const [address, setAddress] = useState(initialAddress);
   const [placing, setPlacing] = useState(false);
   const [error, setError] = useState('');
@@ -27,8 +31,11 @@ export default function Checkout() {
   const idempotencyKey = useMemo(() => crypto.randomUUID(), []);
 
   useEffect(() => {
-    getCart().then((summary) => {
-      dispatch(setCart(summary));
+    Promise.all([getCart(), listAddresses()]).then(([cartSummary, addresses]) => {
+      dispatch(setCart(cartSummary));
+      setSavedAddresses(addresses);
+      const defaultAddr = addresses.find((a) => a.is_default) || addresses[0];
+      if (defaultAddr) setSelectedAddressId(defaultAddr.id);
       setLoading(false);
     });
   }, []);
@@ -40,7 +47,17 @@ export default function Checkout() {
     setError('');
     setPlacing(true);
     try {
-      const result = await placeOrder({ address, paymentMethod: 'COD', idempotencyKey });
+      const selected = savedAddresses.find((a) => a.id === selectedAddressId);
+      const shippingAddress = selected
+        ? {
+            name: selected.name, mobile: selected.mobile, addressLine1: selected.address_line1,
+            addressLine2: selected.address_line2, city: selected.city, state: selected.state, pincode: selected.pincode,
+          }
+        : address;
+
+      const result = await placeOrder({
+        address: shippingAddress, paymentMethod: 'COD', idempotencyKey, saveAddress: !selected,
+      });
       dispatch(resetCart());
       navigate(`/account/orders/${result.orderId}`, { state: { justPlaced: true } });
     } catch (err) {
@@ -67,6 +84,8 @@ export default function Checkout() {
     );
   }
 
+  const usingNewAddress = selectedAddressId === null;
+
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Typography variant="h5" gutterBottom>Checkout</Typography>
@@ -76,29 +95,66 @@ export default function Checkout() {
           <Paper sx={{ p: 3 }} component="form" onSubmit={handlePlaceOrder}>
             <Typography variant="subtitle1" sx={{ mb: 2 }}>Delivery Address</Typography>
             {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
-                <TextField fullWidth label="Full Name" value={address.name} onChange={handleChange('name')} required />
+
+            {savedAddresses.length > 0 && (
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mb: 2 }}>
+                {savedAddresses.map((addr) => (
+                  <Paper
+                    key={addr.id}
+                    variant="outlined"
+                    onClick={() => setSelectedAddressId(addr.id)}
+                    sx={{
+                      p: 2, cursor: 'pointer',
+                      borderColor: selectedAddressId === addr.id ? 'primary.main' : 'divider',
+                      borderWidth: selectedAddressId === addr.id ? 2 : 1,
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Radio checked={selectedAddressId === addr.id} size="small" sx={{ p: 0 }} />
+                      <Typography variant="subtitle2">{addr.name}</Typography>
+                      {addr.is_default ? <Chip size="small" label="Default" color="secondary" /> : null}
+                    </Box>
+                    <Typography variant="body2" color="text.secondary" sx={{ pl: 4 }}>
+                      {addr.address_line1}{addr.address_line2 ? `, ${addr.address_line2}` : ''}, {addr.city}, {addr.state} {addr.pincode} · {addr.mobile}
+                    </Typography>
+                  </Paper>
+                ))}
+                <Button
+                  startIcon={<AddRoundedIcon />}
+                  onClick={() => setSelectedAddressId(null)}
+                  variant={usingNewAddress ? 'contained' : 'outlined'}
+                  sx={{ alignSelf: 'flex-start' }}
+                >
+                  Deliver to a new address
+                </Button>
+              </Box>
+            )}
+
+            {usingNewAddress && (
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <TextField fullWidth label="Full Name" value={address.name} onChange={handleChange('name')} required />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField fullWidth label="Mobile Number" value={address.mobile} onChange={handleChange('mobile')} required />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField fullWidth label="Address Line 1" value={address.addressLine1} onChange={handleChange('addressLine1')} required />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField fullWidth label="Address Line 2 (optional)" value={address.addressLine2} onChange={handleChange('addressLine2')} />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <TextField fullWidth label="City" value={address.city} onChange={handleChange('city')} required />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <TextField fullWidth label="State" value={address.state} onChange={handleChange('state')} required />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <TextField fullWidth label="Pincode" value={address.pincode} onChange={handleChange('pincode')} required />
+                </Grid>
               </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField fullWidth label="Mobile Number" value={address.mobile} onChange={handleChange('mobile')} required />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField fullWidth label="Address Line 1" value={address.addressLine1} onChange={handleChange('addressLine1')} required />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField fullWidth label="Address Line 2 (optional)" value={address.addressLine2} onChange={handleChange('addressLine2')} />
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <TextField fullWidth label="City" value={address.city} onChange={handleChange('city')} required />
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <TextField fullWidth label="State" value={address.state} onChange={handleChange('state')} required />
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <TextField fullWidth label="Pincode" value={address.pincode} onChange={handleChange('pincode')} required />
-              </Grid>
-            </Grid>
+            )}
 
             <Divider sx={{ my: 3 }} />
             <Typography variant="subtitle1" sx={{ mb: 1 }}>Payment Method</Typography>
