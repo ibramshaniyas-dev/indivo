@@ -14,6 +14,7 @@ import RatingStars from '../../components/RatingStars';
 import PriceTag from '../../components/PriceTag';
 import SectionHeader from '../../components/SectionHeader';
 import ProductCard from '../../components/ProductCard';
+import Product360Viewer from '../../components/Product360Viewer';
 import { getProductBySlug, listProducts } from '../../services/product.service';
 import { addToCart } from '../../services/cart.service';
 import { setCart } from '../../store/slices/cartSlice';
@@ -89,13 +90,17 @@ export default function ProductDetail() {
     <Container maxWidth="xl" sx={{ py: 3 }}>
       <Grid container spacing={4}>
         <Grid item xs={12} md={5}>
-          <Box
-            sx={{
-              aspectRatio: '1 / 1', bgcolor: 'grey.100', borderRadius: 3, overflow: 'hidden',
-              backgroundImage: images[activeImage]?.url ? `url(${images[activeImage].url})` : 'none',
-              backgroundSize: 'cover', backgroundPosition: 'center',
-            }}
-          />
+          {activeImage === 0 ? (
+            <Product360Viewer image={images[0]?.url} />
+          ) : (
+            <Box
+              sx={{
+                aspectRatio: '1 / 1', bgcolor: 'grey.100', borderRadius: 3, overflow: 'hidden',
+                backgroundImage: images[activeImage]?.url ? `url(${images[activeImage].url})` : 'none',
+                backgroundSize: 'cover', backgroundPosition: 'center',
+              }}
+            />
+          )}
           {images.length > 1 && (
             <Box sx={{ display: 'flex', gap: 1, mt: 1.5, overflowX: 'auto' }}>
               {images.map((img, i) => (
