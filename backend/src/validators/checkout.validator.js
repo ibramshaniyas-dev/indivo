@@ -2,7 +2,7 @@ const { body } = require('express-validator');
 
 const placeOrder = [
   body('idempotencyKey').trim().notEmpty().withMessage('idempotencyKey is required'),
-  body('paymentMethod').isIn(['COD']).withMessage('Only Cash on Delivery is supported right now'),
+  body('paymentMethod').isIn(['COD', 'ONLINE']).withMessage('Choose a valid payment method'),
   body('address.name').trim().notEmpty().withMessage('Name is required'),
   body('address.mobile').trim().matches(/^[6-9]\d{9}$/).withMessage('Enter a valid 10-digit mobile number'),
   body('address.addressLine1').trim().notEmpty().withMessage('Address is required'),

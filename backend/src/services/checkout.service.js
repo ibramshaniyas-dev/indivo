@@ -137,17 +137,21 @@ async function placeOrder({ customerId, address, paymentMethod, idempotencyKey }
     const orderPublicId = uuidv4();
     const orderNumber = nextNumber('IND-ORD');
 
+    // COD is payable-on-delivery, so its transaction sits PENDING until the courier collects it.
+    // ONLINE starts CREATED — no Razorpay order exists yet; POST /payments/create makes one next.
+    const initialPaymentStatus = paymentMethod === 'ONLINE' ? 'CREATED' : 'PENDING';
+
     const orderResult = await tx.query(
-      `INSERT INTO orders (public_id, order_number, customer_id, shipping_name, shipping_mobile,
+      `INSERT INTO orders (public_id, order_number, customer_id, payment_method, shipping_name, shipping_mobile,
          shipping_address1, shipping_address2, shipping_city, shipping_state, shipping_pincode,
          subtotal, discount, tax, shipping_charge, grand_total, payment_status, status, idempotency_key, placed_at)
-       VALUES (:publicId, :orderNumber, :customerId, :name, :mobile, :address1, :address2, :city, :state, :pincode,
+       VALUES (:publicId, :orderNumber, :customerId, :paymentMethod, :name, :mobile, :address1, :address2, :city, :state, :pincode,
          :subtotal, 0, :tax, :shipping, :grandTotal, :paymentStatus, 'PLACED', :idempotencyKey, NOW())`,
       {
-        publicId: orderPublicId, orderNumber, customerId, name: address.name, mobile: address.mobile,
+        publicId: orderPublicId, orderNumber, customerId, paymentMethod, name: address.name, mobile: address.mobile,
         address1: address.addressLine1, address2: address.addressLine2 || null, city: address.city,
         state: address.state, pincode: address.pincode, subtotal: orderSubtotal, tax: orderTax,
-        shipping: orderShipping, grandTotal, paymentStatus: paymentMethod === 'COD' ? 'PENDING' : 'PENDING',
+        shipping: orderShipping, grandTotal, paymentStatus: initialPaymentStatus,
         idempotencyKey,
       }
     );
@@ -158,7 +162,7 @@ async function placeOrder({ customerId, address, paymentMethod, idempotencyKey }
        VALUES (:orderId, :method, :amount, :status, :idempotencyKey)`,
       {
         orderId, method: paymentMethod, amount: grandTotal,
-        status: paymentMethod === 'COD' ? 'PENDING' : 'PENDING', idempotencyKey: `${idempotencyKey}-payment`,
+        status: initialPaymentStatus, idempotencyKey: `${idempotencyKey}-payment`,
       }
     );
 

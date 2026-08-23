@@ -19,6 +19,7 @@ const adminCustomerRoutes = require('./admin/customer.routes');
 const adminOrderRoutes = require('./admin/order.routes');
 const adminShipmentRoutes = require('./admin/shipment.routes');
 const webhookRoutes = require('./webhook.routes');
+const paymentRoutes = require('./payment.routes');
 
 const router = express.Router();
 
@@ -42,7 +43,8 @@ router.use('/admin/customers', adminCustomerRoutes);
 router.use('/admin/orders', adminOrderRoutes);
 router.use('/admin/shipments', adminShipmentRoutes);
 router.use('/webhooks', webhookRoutes);
+router.use('/payments', paymentRoutes);
 
-// Phase 1 (remaining): payments gateway integration (customer-facing create/verify), returns/refunds.
+// Phase 1 (remaining): returns/refunds admin flow.
 
 module.exports = router;

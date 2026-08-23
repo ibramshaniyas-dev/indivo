@@ -9,6 +9,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { getCart } from '../../services/cart.service';
 import { placeOrder } from '../../services/checkout.service';
 import { listAddresses } from '../../services/customerAddress.service';
+import { getPaymentConfig, createPayment, verifyPayment } from '../../services/payment.service';
+import { openRazorpayCheckout } from '../../utils/razorpay';
 import { setCart, resetCart } from '../../store/slices/cartSlice';
 
 function formatINR(value) {
@@ -27,15 +29,19 @@ export default function Checkout() {
   const [address, setAddress] = useState(initialAddress);
   const [placing, setPlacing] = useState(false);
   const [error, setError] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('COD');
+  const [paymentConfig, setPaymentConfig] = useState({ onlinePaymentsEnabled: false, keyId: null });
+  const [retryingPayment, setRetryingPayment] = useState(false);
 
   const idempotencyKey = useMemo(() => crypto.randomUUID(), []);
 
   useEffect(() => {
-    Promise.all([getCart(), listAddresses()]).then(([cartSummary, addresses]) => {
+    Promise.all([getCart(), listAddresses(), getPaymentConfig()]).then(([cartSummary, addresses, payConfig]) => {
       dispatch(setCart(cartSummary));
       setSavedAddresses(addresses);
       const defaultAddr = addresses.find((a) => a.is_default) || addresses[0];
       if (defaultAddr) setSelectedAddressId(defaultAddr.id);
+      setPaymentConfig(payConfig);
       setLoading(false);
     });
   }, []);
@@ -55,13 +61,34 @@ export default function Checkout() {
           }
         : address;
 
-      const result = await placeOrder({
-        address: shippingAddress, paymentMethod: 'COD', idempotencyKey, saveAddress: !selected,
-      });
+      // idempotencyKey is stable for this page visit, so re-submitting after a failed/cancelled
+      // online payment returns the same order instead of placing a second one — safe to retry.
+      const result = await placeOrder({ address: shippingAddress, paymentMethod, idempotencyKey, saveAddress: !selected });
+
+      if (paymentMethod === 'ONLINE') {
+        const payment = await createPayment(result.orderId);
+        const rzpResult = await openRazorpayCheckout({
+          keyId: payment.keyId,
+          amount: payment.amount,
+          currency: payment.currency,
+          razorpayOrderId: payment.razorpayOrderId,
+          name: 'INDIVO',
+          description: 'Order payment',
+          prefill: { name: shippingAddress.name, contact: shippingAddress.mobile },
+        });
+        await verifyPayment({
+          orderId: result.orderId,
+          razorpayOrderId: rzpResult.razorpayOrderId,
+          razorpayPaymentId: rzpResult.razorpayPaymentId,
+          razorpaySignature: rzpResult.razorpaySignature,
+        });
+      }
+
       dispatch(resetCart());
       navigate(`/account/orders/${result.orderId}`, { state: { justPlaced: true } });
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to place order');
+      setError(err.response?.data?.message || err.message || 'Failed to place order');
+      if (paymentMethod === 'ONLINE') setRetryingPayment(true);
     } finally {
       setPlacing(false);
     }
@@ -158,15 +185,27 @@ export default function Checkout() {
 
             <Divider sx={{ my: 3 }} />
             <Typography variant="subtitle1" sx={{ mb: 1 }}>Payment Method</Typography>
-            <RadioGroup value="COD">
+            <RadioGroup value={paymentMethod} onChange={(e) => { setPaymentMethod(e.target.value); setRetryingPayment(false); }}>
               <FormControlLabel value="COD" control={<Radio />} label="Cash on Delivery" />
+              <FormControlLabel
+                value="ONLINE"
+                control={<Radio />}
+                disabled={!paymentConfig.onlinePaymentsEnabled}
+                label="Pay Online — UPI, Cards, Netbanking (via Razorpay)"
+              />
             </RadioGroup>
-            <Typography variant="caption" color="text.secondary">
-              Online payment is coming soon — Cash on Delivery is the only option right now.
-            </Typography>
+            {!paymentConfig.onlinePaymentsEnabled && (
+              <Typography variant="caption" color="text.secondary">
+                Online payment is coming soon — Cash on Delivery is the only option right now.
+              </Typography>
+            )}
 
             <Button type="submit" variant="contained" size="large" fullWidth disabled={placing} sx={{ mt: 3 }}>
-              {placing ? 'Placing Order…' : `Place Order — ${formatINR(cart.subtotal)}`}
+              {placing
+                ? (paymentMethod === 'ONLINE' ? 'Opening Payment…' : 'Placing Order…')
+                : retryingPayment
+                  ? `Retry Payment — ${formatINR(cart.subtotal)}`
+                  : `Place Order — ${formatINR(cart.subtotal)}`}
             </Button>
           </Paper>
         </Grid>
