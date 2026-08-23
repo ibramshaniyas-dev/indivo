@@ -3,7 +3,7 @@ import PortalLoginForm from '../../components/PortalLoginForm';
 
 export default function SuperAdminLogin() {
   return (
-    <Box sx={{ bgcolor: '#070D20', minHeight: '100vh', pt: 4 }}>
+    <Box sx={{ bgcolor: '#0A0908', minHeight: '100vh', pt: 4 }}>
       <PortalLoginForm
         title="Super Admin Control Center"
         subtitle="Complete platform access — restricted"

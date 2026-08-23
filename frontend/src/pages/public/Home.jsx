@@ -21,7 +21,7 @@ export default function Home() {
     <Box>
       <Box
         sx={{
-          background: 'linear-gradient(135deg, #121F42 0%, #26355F 100%)',
+          background: 'linear-gradient(135deg, #161513 0%, #332F28 100%)',
           color: '#fff', py: { xs: 6, md: 10 },
         }}
       >

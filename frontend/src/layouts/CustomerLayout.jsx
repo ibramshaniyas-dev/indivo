@@ -43,8 +43,8 @@ export default function CustomerLayout() {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Box sx={{ bgcolor: 'primary.main', color: '#fff', py: 0.5, textAlign: 'center' }}>
-        <Typography variant="caption" sx={{ fontWeight: 500 }}>
-          Welcome to INDIVO — India's marketplace for every business, big or small.
+        <Typography variant="caption" sx={{ fontWeight: 500, letterSpacing: 0.3 }}>
+          India's Best Marketplace — Discover Something Special
         </Typography>
       </Box>
 

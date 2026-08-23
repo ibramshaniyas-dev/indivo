@@ -1,27 +1,27 @@
 import { createTheme } from '@mui/material/styles';
 
-// INDIVO design tokens — deep navy (trust, premium) + warm gold (Indian marketplace, festive quality)
-// deliberately avoids Amazon-orange / Flipkart-blue / Myntra-pink territory.
+// INDIVO design tokens, matching the official logo: deep black/charcoal + luxury gold on warm
+// white — deliberately avoids Amazon-orange / Flipkart-blue / Myntra-pink territory.
 const colors = {
-  navy: { main: '#121F42', light: '#26355F', dark: '#070D20', contrastText: '#FFFFFF' },
-  gold: { main: '#E3A63E', light: '#F2C572', dark: '#B8841F', contrastText: '#121F42' },
+  navy: { main: '#161513', light: '#2E2B27', dark: '#0A0908', contrastText: '#FFFFFF' },
+  gold: { main: '#C9974B', light: '#E3C48A', dark: '#9C7233', contrastText: '#161513' },
   success: { main: '#1FA97A', light: '#E4F7EF' },
   error: { main: '#E5484D', light: '#FDEAEA' },
   warning: { main: '#F5A623', light: '#FEF3E0' },
   info: { main: '#3B82F6', light: '#E9F1FE' },
   neutral: {
-    50: '#F8F8FB',
-    100: '#F1F1F6',
-    200: '#E4E4ED',
-    300: '#CFD0DB',
-    600: '#6C6F80',
-    800: '#33364A',
-    900: '#171A2B',
+    50: '#FAF8F4',
+    100: '#F3EFE7',
+    200: '#E6E0D4',
+    300: '#CFC6B4',
+    600: '#736C5E',
+    800: '#332F28',
+    900: '#1C1A16',
   },
 };
 
-const softShadow = '0 1px 2px rgba(18,31,66,0.04), 0 4px 12px rgba(18,31,66,0.06)';
-const liftShadow = '0 8px 24px rgba(18,31,66,0.12)';
+const softShadow = '0 1px 2px rgba(22,21,19,0.05), 0 4px 12px rgba(22,21,19,0.07)';
+const liftShadow = '0 8px 24px rgba(22,21,19,0.14)';
 
 const theme = createTheme({
   palette: {
@@ -133,7 +133,7 @@ const theme = createTheme({
     },
     MuiAppBar: {
       styleOverrides: {
-        root: { boxShadow: '0 1px 0 rgba(18,31,66,0.08)' },
+        root: { boxShadow: '0 1px 0 rgba(22,21,19,0.1)' },
       },
     },
     MuiTableCell: {
