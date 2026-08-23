@@ -21,7 +21,12 @@ async function runOnce() {
     `SELECT seller_order_id FROM shipments WHERE tracking_number IS NOT NULL AND status NOT IN (:terminal)`,
     { terminal: TERMINAL_STATUSES }
   );
-  if (shipments.length === 0) return { checked: 0, failed: 0 };
+  if (shipments.length === 0) {
+    // Logged even when there's nothing to do — confirms each tick actually ran, rather than
+    // leaving silence indistinguishable from "the job stopped running."
+    logger.info('Shipment tracking sync: run complete, nothing to sync');
+    return { checked: 0, failed: 0 };
+  }
 
   let failed = 0;
   for (const { seller_order_id: sellerOrderId } of shipments) {
