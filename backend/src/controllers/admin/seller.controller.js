@@ -4,13 +4,22 @@ const { success } = require('../../utils/response');
 
 async function list(req, res, next) {
   try {
-    const { status } = req.query;
+    const { status, search } = req.query;
     const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
     const limit = Math.min(parseInt(req.query.limit, 10) || 20, 100);
     const offset = (page - 1) * limit;
 
-    const where = status ? 'WHERE s.status = :status' : '';
-    const params = status ? { status } : {};
+    const conditions = [];
+    const params = {};
+    if (status) {
+      conditions.push('s.status = :status');
+      params.status = status;
+    }
+    if (search) {
+      conditions.push('(s.company_name LIKE :search OR s.display_name LIKE :search OR u.mobile LIKE :search)');
+      params.search = `%${search}%`;
+    }
+    const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
 
     const sellers = await db.query(
       `SELECT s.id, s.public_id, s.company_name, s.display_name, s.status, s.created_at,
@@ -23,7 +32,10 @@ async function list(req, res, next) {
        LIMIT :limit OFFSET :offset`,
       { ...params, limit, offset }
     );
-    const [{ total }] = await db.query(`SELECT COUNT(*) AS total FROM sellers s ${where}`, params);
+    const [{ total }] = await db.query(
+      `SELECT COUNT(*) AS total FROM sellers s JOIN seller_users su ON su.seller_id = s.id AND su.seller_role = 'OWNER' JOIN users u ON u.id = su.user_id ${where}`,
+      params
+    );
 
     return success(res, { data: sellers, meta: { page, limit, total: Number(total) } });
   } catch (err) {

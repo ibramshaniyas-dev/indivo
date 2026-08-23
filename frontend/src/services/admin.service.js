@@ -1,7 +1,7 @@
 import api from './api';
 
-export async function listSellers(status) {
-  const { data } = await api.get('/admin/sellers', { params: status ? { status } : {} });
+export async function listSellers(params = {}) {
+  const { data } = await api.get('/admin/sellers', { params });
   return data;
 }
 
