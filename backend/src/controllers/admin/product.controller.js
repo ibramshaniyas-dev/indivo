@@ -18,10 +18,14 @@ async function list(req, res, next) {
       conditions.push('p.seller_id = :sellerId');
       params.sellerId = req.query.seller;
     }
+    if (req.query.search) {
+      conditions.push('(p.name LIKE :search OR p.sku LIKE :search)');
+      params.search = `%${req.query.search}%`;
+    }
     const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
 
     const products = await db.query(
-      `SELECT p.id, p.name, p.sku, p.status, p.selling_price, p.mrp, p.created_at,
+      `SELECT p.id, p.name, p.sku, p.status, p.selling_price, p.mrp, p.created_at, p.is_featured,
               s.display_name AS seller_name, c.name AS category_name,
               (SELECT url FROM product_images pi WHERE pi.product_id = p.id ORDER BY is_primary DESC LIMIT 1) AS image
        FROM products p

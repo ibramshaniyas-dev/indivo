@@ -1,15 +1,19 @@
 import { createSlice } from '@reduxjs/toolkit';
 
+const initialState = { items: [], sellerGroups: [], subtotal: 0, itemCount: 0, hasIssues: false, loaded: false };
+
 const cartSlice = createSlice({
   name: 'cart',
-  initialState: { items: [], sellerCount: 0 },
+  initialState,
   reducers: {
     setCart(state, action) {
-      state.items = action.payload.items;
-      state.sellerCount = new Set(action.payload.items.map((item) => item.sellerId)).size;
+      return { ...action.payload, loaded: true };
+    },
+    resetCart() {
+      return initialState;
     },
   },
 });
 
-export const { setCart } = cartSlice.actions;
+export const { setCart, resetCart } = cartSlice.actions;
 export default cartSlice.reducer;

@@ -5,6 +5,7 @@ const brandRoutes = require('./brand.routes');
 const attributeRoutes = require('./attribute.routes');
 const sellerRoutes = require('./seller.routes');
 const productRoutes = require('./product.routes');
+const cartRoutes = require('./cart.routes');
 const adminSellerRoutes = require('./admin/seller.routes');
 const adminProductRoutes = require('./admin/product.routes');
 const adminUserRoutes = require('./admin/adminUser.routes');
@@ -18,12 +19,13 @@ router.use('/brands', brandRoutes);
 router.use('/attributes', attributeRoutes);
 router.use('/sellers', sellerRoutes);
 router.use('/products', productRoutes);
+router.use('/cart', cartRoutes);
 router.use('/admin/sellers', adminSellerRoutes);
 router.use('/admin/products', adminProductRoutes);
 router.use('/admin/users', adminUserRoutes);
 router.use('/admin/roles', adminRoleRoutes);
 
-// Phase 1 (remaining): customers, cart, wishlist, checkout, orders,
+// Phase 1 (remaining): customers, wishlist, checkout, orders,
 // payments, admin dashboard — mounted here as each ships.
 
 module.exports = router;

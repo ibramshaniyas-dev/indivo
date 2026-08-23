@@ -1,21 +1,30 @@
 import { useEffect, useState } from 'react';
 import {
-  Box, Container, Grid, Typography, Button, Chip, Divider, Tabs, Tab, IconButton, CircularProgress,
+  Box, Container, Grid, Typography, Button, Chip, Divider, Tabs, Tab, IconButton, CircularProgress, Alert, Snackbar,
 } from '@mui/material';
 import FavoriteBorderRoundedIcon from '@mui/icons-material/FavoriteBorderRounded';
 import ShoppingCartRoundedIcon from '@mui/icons-material/ShoppingCartRounded';
 import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
 import VerifiedUserOutlinedIcon from '@mui/icons-material/VerifiedUserOutlined';
 import ReplayRoundedIcon from '@mui/icons-material/ReplayRounded';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import RatingStars from '../../components/RatingStars';
 import PriceTag from '../../components/PriceTag';
 import SectionHeader from '../../components/SectionHeader';
 import ProductCard from '../../components/ProductCard';
 import { getProductBySlug, listProducts } from '../../services/product.service';
+import { addToCart } from '../../services/cart.service';
+import { setCart } from '../../store/slices/cartSlice';
 
 export default function ProductDetail() {
   const { slug } = useParams();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const [cartError, setCartError] = useState('');
+  const [cartMessage, setCartMessage] = useState('');
+  const [addingToCart, setAddingToCart] = useState(false);
   const [product, setProduct] = useState(null);
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [activeImage, setActiveImage] = useState(0);
@@ -38,6 +47,26 @@ export default function ProductDetail() {
       }
     });
   }, [slug]);
+
+  const handleAddToCart = async (redirectToCart) => {
+    if (!isAuthenticated || user?.userType !== 'CUSTOMER') {
+      navigate(`/login?redirect=/product/${slug}`);
+      return;
+    }
+    if (!selectedVariant) return;
+    setCartError('');
+    setAddingToCart(true);
+    try {
+      const summary = await addToCart(selectedVariant.id, 1);
+      dispatch(setCart(summary));
+      if (redirectToCart) navigate('/cart');
+      else setCartMessage('Added to cart');
+    } catch (err) {
+      setCartError(err.response?.data?.message || 'Failed to add to cart');
+    } finally {
+      setAddingToCart(false);
+    }
+  };
 
   if (loading) {
     return <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}><CircularProgress /></Box>;
@@ -126,17 +155,26 @@ export default function ProductDetail() {
             )}
           </Box>
 
+          {cartError && <Alert severity="error" sx={{ mb: 2 }}>{cartError}</Alert>}
           <Box sx={{ display: 'flex', gap: 1.5, mb: 3 }}>
-            <Button variant="contained" size="large" startIcon={<ShoppingCartRoundedIcon />} disabled={stock === 0} sx={{ flexGrow: 1, maxWidth: 240 }}>
+            <Button
+              variant="contained" size="large" startIcon={<ShoppingCartRoundedIcon />}
+              disabled={stock === 0 || addingToCart} sx={{ flexGrow: 1, maxWidth: 240 }}
+              onClick={() => handleAddToCart(false)}
+            >
               Add to Cart
             </Button>
-            <Button variant="outlined" size="large" disabled={stock === 0} sx={{ flexGrow: 1, maxWidth: 200 }}>
+            <Button
+              variant="outlined" size="large" disabled={stock === 0 || addingToCart} sx={{ flexGrow: 1, maxWidth: 200 }}
+              onClick={() => handleAddToCart(true)}
+            >
               Buy Now
             </Button>
             <IconButton size="large" sx={{ border: '1.5px solid', borderColor: 'divider', borderRadius: 2.5 }}>
               <FavoriteBorderRoundedIcon />
             </IconButton>
           </Box>
+          <Snackbar open={Boolean(cartMessage)} autoHideDuration={2500} onClose={() => setCartMessage('')} message={cartMessage} />
 
           <Divider />
           <Grid container spacing={2} sx={{ my: 1 }}>

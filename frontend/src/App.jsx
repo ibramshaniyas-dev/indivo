@@ -7,6 +7,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Home from './pages/public/Home';
 import SearchResults from './pages/public/SearchResults';
 import ProductDetail from './pages/public/ProductDetail';
+import Cart from './pages/public/Cart';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import SellerLoginPage from './pages/auth/SellerLogin';
@@ -21,6 +22,7 @@ import SellerProductForm from './pages/seller/ProductForm';
 
 import AdminDashboard from './pages/admin/Dashboard';
 import SellerApprovals from './pages/admin/SellerApprovals';
+import AdminProducts from './pages/admin/Products';
 import Categories from './pages/admin/Categories';
 import Brands from './pages/admin/Brands';
 import AdminUsers from './pages/admin/AdminUsers';
@@ -32,7 +34,7 @@ function adminRoutes() {
     <>
       <Route path="dashboard" element={<AdminDashboard />} />
       <Route path="sellers" element={<ProtectedRoute permission="sellers.view"><SellerApprovals /></ProtectedRoute>} />
-      <Route path="products" element={<ProtectedRoute permission="products.view"><ComingSoon title="Product Management" /></ProtectedRoute>} />
+      <Route path="products" element={<ProtectedRoute permission="products.view"><AdminProducts /></ProtectedRoute>} />
       <Route path="categories" element={<ProtectedRoute permission="categories.view"><Categories /></ProtectedRoute>} />
       <Route path="brands" element={<ProtectedRoute permission="brands.view"><Brands /></ProtectedRoute>} />
       <Route path="attributes" element={<ProtectedRoute permission="attributes.view"><ComingSoon title="Attributes" /></ProtectedRoute>} />
@@ -65,6 +67,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/search" element={<SearchResults />} />
           <Route path="/product/:slug" element={<ProductDetail />} />
+          <Route path="/cart" element={<Cart />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/sell" element={<SellerRegister />} />

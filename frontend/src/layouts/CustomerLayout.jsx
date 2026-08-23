@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   AppBar, Toolbar, Typography, Box, Button, InputBase, IconButton, Badge, Container,
   Divider, Link as MuiLink, Paper,
@@ -13,7 +13,9 @@ import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded';
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { clearUser } from '../store/slices/authSlice';
+import { setCart, resetCart } from '../store/slices/cartSlice';
 import { logout } from '../services/auth.service';
+import { getCart } from '../services/cart.service';
 
 const FOOTER_COLUMNS = [
   { title: 'INDIVO', links: [{ label: 'About Us', href: '/about' }, { label: 'Careers', href: '#' }, { label: 'Press', href: '#' }] },
@@ -24,14 +26,21 @@ const FOOTER_COLUMNS = [
 
 export default function CustomerLayout() {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
-  const cartCount = useSelector((state) => state.cart.items.length);
+  const cartCount = useSelector((state) => state.cart.itemCount);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
 
+  useEffect(() => {
+    if (isAuthenticated && user?.userType === 'CUSTOMER') {
+      getCart().then((summary) => dispatch(setCart(summary))).catch(() => {});
+    }
+  }, [isAuthenticated]);
+
   const handleLogout = async () => {
     await logout();
     dispatch(clearUser());
+    dispatch(resetCart());
     navigate('/login');
   };
 
