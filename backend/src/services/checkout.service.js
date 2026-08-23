@@ -1,7 +1,9 @@
 const { v4: uuidv4 } = require('uuid');
 const db = require('../config/database');
 const ApiError = require('../utils/ApiError');
+const logger = require('../utils/logger');
 const { getCommissionRate, computeCommissionAmount } = require('./commission.service');
+const shiprocketService = require('./shiprocket.service');
 
 const FREE_SHIPPING_THRESHOLD = 999;
 const FLAT_SHIPPING_CHARGE = 49;
@@ -22,8 +24,10 @@ function nextNumber(prefix) {
  *  4. Deducts stock immediately (COD has no separate payment-confirmation step to defer to) and
  *     records an inventory_transaction per variant.
  *  5. Clears the ordered cart items.
+ * Returns sellerOrderIds too, so the exported placeOrder() wrapper below can kick off Shiprocket
+ * order creation for each one right after this transaction commits.
  */
-async function placeOrder({ customerId, address, paymentMethod, idempotencyKey }) {
+async function placeOrderTx({ customerId, address, paymentMethod, idempotencyKey }) {
   const existingOrder = await db.queryOne('SELECT id, public_id FROM orders WHERE idempotency_key = :key', {
     key: idempotencyKey,
   });
@@ -166,6 +170,8 @@ async function placeOrder({ customerId, address, paymentMethod, idempotencyKey }
       }
     );
 
+    const sellerOrderIds = [];
+
     for (const sellerOrder of sellerOrderPayloads) {
       const subOrderNumber = nextNumber('IND-SO');
       const sellerPayable = sellerOrder.sellerSubtotal + sellerOrder.sellerShipping - sellerOrder.commissionAmount;
@@ -181,6 +187,7 @@ async function placeOrder({ customerId, address, paymentMethod, idempotencyKey }
         }
       );
       const sellerOrderId = soResult.insertId;
+      sellerOrderIds.push(sellerOrderId);
 
       await tx.query(
         `INSERT INTO order_status_history (seller_order_id, status, note) VALUES (:id, 'PLACED', 'Order placed by customer')`,
@@ -219,8 +226,43 @@ async function placeOrder({ customerId, address, paymentMethod, idempotencyKey }
 
     await tx.query('DELETE FROM cart_items WHERE cart_id = :cartId', { cartId: cart.id });
 
-    return { orderId, publicId: orderPublicId, orderNumber, grandTotal, duplicate: false };
+    return { orderId, publicId: orderPublicId, orderNumber, grandTotal, duplicate: false, sellerOrderIds };
   });
+}
+
+/**
+ * Fires the Shiprocket order-creation call for a freshly-placed seller_order without blocking
+ * whoever placed the order. Deliberately swallows all errors (missing pickup address, Shiprocket
+ * outage, unserviceable pincode, etc.) — the seller_order just stays shipment-less (NOT_CREATED
+ * in the admin Shipments overview) and can be created manually from the order/seller panel,
+ * exactly like before this was automated. An order must never be lost or blocked by a shipping
+ * side effect.
+ */
+async function autoCreateShipment(sellerOrderId) {
+  try {
+    await shiprocketService.createOrder(sellerOrderId);
+  } catch (err) {
+    logger.warn('Auto shipment creation failed at checkout — order was still placed; create the shipment manually to retry', {
+      sellerOrderId, error: err.message,
+    });
+  }
+}
+
+/**
+ * Places the order (see placeOrderTx), then — once it's durably committed — kicks off Shiprocket
+ * order creation for every seller_order in the background (not awaited) so a slow or failing
+ * Shiprocket call never delays the checkout response or fails an order that's already been
+ * placed. A duplicate (idempotent replay) skips this, since shipment creation already happened
+ * or is in flight for the original request.
+ */
+async function placeOrder(args) {
+  const result = await placeOrderTx(args);
+  if (!result.duplicate) {
+    for (const sellerOrderId of result.sellerOrderIds) {
+      autoCreateShipment(sellerOrderId); // not awaited — see autoCreateShipment
+    }
+  }
+  return result;
 }
 
 module.exports = { placeOrder };
