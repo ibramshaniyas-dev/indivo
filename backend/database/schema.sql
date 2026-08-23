@@ -140,6 +140,7 @@ CREATE TABLE sellers (
   legal_name         VARCHAR(200) NULL,
   seller_type        VARCHAR(50) NULL,
   business_category  VARCHAR(100) NULL,
+  shiprocket_pickup_location VARCHAR(100) NULL,
   gst_no             VARCHAR(20) NULL,
   pan_no             VARCHAR(15) NULL,
   business_reg_no    VARCHAR(50) NULL,

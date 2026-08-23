@@ -15,6 +15,56 @@ async function authenticate() {
 }
 
 /**
+ * Registers the seller's REGISTERED business address as a Shiprocket pickup location, once —
+ * the result (a "pickup_location" nickname) is cached on sellers.shiprocket_pickup_location so
+ * repeat orders don't re-register. Shiprocket picks up FROM the seller's own address (dropship
+ * marketplace model), not a central INDIVO warehouse.
+ */
+async function ensurePickupLocation(sellerId) {
+  const seller = await db.queryOne(
+    'SELECT id, display_name, contact_person, shiprocket_pickup_location FROM sellers WHERE id = :id',
+    { id: sellerId }
+  );
+  if (!seller) throw new Error(`Seller ${sellerId} not found`);
+  if (seller.shiprocket_pickup_location) return seller.shiprocket_pickup_location;
+
+  const address = await db.queryOne(
+    "SELECT address_line1, address_line2, city, state, pincode FROM seller_addresses WHERE seller_id = :id AND type = 'REGISTERED' LIMIT 1",
+    { id: sellerId }
+  );
+  if (!address) throw new Error(`Seller ${sellerId} has no registered business address to use as a pickup location`);
+
+  const owner = await db.queryOne(
+    `SELECT u.mobile, u.email FROM seller_users su JOIN users u ON u.id = su.user_id
+     WHERE su.seller_id = :id AND su.seller_role = 'OWNER' LIMIT 1`,
+    { id: sellerId }
+  );
+
+  // Shiprocket pickup_location nicknames must be unique per account and are alphanumeric —
+  // derive one deterministically from the seller id so it never collides across sellers.
+  const pickupLocationName = `INDIVO-SELLER-${sellerId}`;
+
+  await client.post('/settings/company/addpickup', {
+    pickup_location: pickupLocationName,
+    name: seller.contact_person || seller.display_name,
+    email: owner?.email || 'support@indivo.iharogroups.com',
+    phone: owner?.mobile || '9999999999',
+    address: address.address_line1,
+    address_2: address.address_line2 || '',
+    city: address.city,
+    state: address.state,
+    country: 'India',
+    pin_code: address.pincode,
+  });
+
+  await db.query('UPDATE sellers SET shiprocket_pickup_location = :name WHERE id = :id', {
+    id: sellerId, name: pickupLocationName,
+  });
+  logger.info('Shiprocket: pickup location registered', { sellerId, pickupLocationName });
+  return pickupLocationName;
+}
+
+/**
  * Builds and submits a Shiprocket "adhoc" order from an existing seller_order. This is order
  * creation + shipment creation combined — Shiprocket's create-adhoc-order endpoint returns both
  * an order_id and a shipment_id in one call.
@@ -35,13 +85,7 @@ async function createOrder(sellerOrderId) {
   );
   if (!sellerOrder) throw new Error(`seller_order ${sellerOrderId} not found`);
 
-  const warehouse = await db.queryOne(
-    "SELECT name, address_line1, city, state, pincode FROM warehouses WHERE seller_id = :sellerId AND is_default = 1 LIMIT 1",
-    { sellerId: sellerOrder.seller_id }
-  );
-  if (!warehouse) {
-    throw new Error('Seller has no default warehouse/pickup location configured in Shiprocket-compatible form');
-  }
+  const pickupLocation = await ensurePickupLocation(sellerOrder.seller_id);
 
   const items = await db.query(
     'SELECT product_name, sku, quantity, price FROM order_items WHERE seller_order_id = :id',
@@ -55,7 +99,7 @@ async function createOrder(sellerOrderId) {
   const payload = {
     order_id: sellerOrder.sub_order_number,
     order_date: new Date().toISOString().slice(0, 19).replace('T', ' '),
-    pickup_location: warehouse.name,
+    pickup_location: pickupLocation,
     billing_customer_name: firstName,
     billing_last_name: lastName,
     billing_address: sellerOrder.shipping_address1,
@@ -190,7 +234,7 @@ async function reconcileCOD() {
 }
 
 module.exports = {
-  authenticate, createOrder, getAvailableCouriers, generateAWB, requestPickup, generateLabel,
-  trackShipment, cancelShipment, getShipmentDetails, getShippingRates, syncShipmentStatus,
-  getCODRemittance, reconcileCOD,
+  authenticate, ensurePickupLocation, createOrder, getAvailableCouriers, generateAWB, requestPickup,
+  generateLabel, trackShipment, cancelShipment, getShipmentDetails, getShippingRates,
+  syncShipmentStatus, getCODRemittance, reconcileCOD,
 };
