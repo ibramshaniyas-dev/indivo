@@ -3,7 +3,7 @@ const env = require('../config/env');
 const logger = require('../utils/logger');
 const { success } = require('../utils/response');
 const razorpayService = require('../services/razorpay.service');
-const { refreshParentOrderStatus } = require('./sellerOrder.controller');
+const shiprocketService = require('../services/shiprocket.service');
 
 // Webhooks must always ACK with 2xx once the event is durably recorded, even if our own
 // processing later fails — returning an error status makes the sender retry indefinitely and
@@ -117,29 +117,6 @@ async function razorpayWebhook(req, res) {
 
 // ==================== SHIPROCKET ====================
 
-// Shiprocket's tracking webhook uses human-readable status strings that don't map 1:1 onto our
-// shipments.status enum. Normalize the common ones; anything unrecognized is logged and left as
-// a tracking-timeline entry only (shipments.status untouched) rather than guessed at.
-const SHIPROCKET_STATUS_MAP = {
-  'pickup generated': 'PICKUP_REQUESTED',
-  'pickup scheduled': 'PICKUP_REQUESTED',
-  'picked up': 'PICKED_UP',
-  shipped: 'SHIPPED',
-  'in transit': 'IN_TRANSIT',
-  'out for delivery': 'OUT_FOR_DELIVERY',
-  delivered: 'DELIVERED',
-  cancelled: 'CANCELLED',
-  canceled: 'CANCELLED',
-  'rto initiated': 'RTO_INITIATED',
-  'rto in transit': 'RTO_IN_TRANSIT',
-  'rto delivered': 'RTO_DELIVERED',
-};
-
-function mapShiprocketStatus(rawStatus) {
-  if (!rawStatus) return null;
-  return SHIPROCKET_STATUS_MAP[String(rawStatus).trim().toLowerCase()] || null;
-}
-
 async function shiprocketWebhook(req, res) {
   let externalEventId = null;
   try {
@@ -171,38 +148,21 @@ async function shiprocketWebhook(req, res) {
       return success(res, { message: 'Webhook received (no matching shipment)' });
     }
 
-    const mappedStatus = mapShiprocketStatus(rawStatus);
-
-    await db.transaction(async (tx) => {
-      await tx.query(
-        `INSERT IGNORE INTO shipment_tracking (shipment_id, status, location, note, tracked_at)
-         VALUES (:shipmentId, :status, :location, :note, :trackedAt)`,
-        {
-          shipmentId: shipment.id, status: rawStatus || 'UPDATE', location, note: payload.remark || null,
-          trackedAt: payload.updated_at || payload.timestamp || new Date(),
-        }
-      );
-
-      if (mappedStatus) {
-        await tx.query('UPDATE shipments SET status = :status WHERE id = :id', { id: shipment.id, status: mappedStatus });
-
-        if (mappedStatus === 'DELIVERED') {
-          const sellerOrder = await tx.queryOne('SELECT id, order_id, status FROM seller_orders WHERE id = :id', {
-            id: shipment.seller_order_id,
-          });
-          if (sellerOrder && sellerOrder.status !== 'CANCELLED' && sellerOrder.status !== 'DELIVERED') {
-            await tx.query("UPDATE seller_orders SET status = 'DELIVERED' WHERE id = :id", { id: sellerOrder.id });
-            await tx.query(
-              `INSERT INTO order_status_history (seller_order_id, status, note) VALUES (:id, 'DELIVERED', 'Delivered per Shiprocket webhook')`,
-              { id: sellerOrder.id }
-            );
-            await refreshParentOrderStatus(sellerOrder.order_id, tx);
-          }
-        }
-      } else {
-        logger.info('Shiprocket webhook: unrecognized status string, tracking-only', { rawStatus });
+    await db.query(
+      `INSERT IGNORE INTO shipment_tracking (shipment_id, status, location, note, tracked_at)
+       VALUES (:shipmentId, :status, :location, :note, :trackedAt)`,
+      {
+        shipmentId: shipment.id, status: rawStatus || 'UPDATE', location, note: payload.remark || null,
+        trackedAt: payload.updated_at || payload.timestamp || new Date(),
       }
-    });
+    );
+
+    const mappedStatus = shiprocketService.mapShiprocketStatus(rawStatus);
+    if (mappedStatus && mappedStatus !== shipment.status) {
+      await shiprocketService.applyShipmentStatus(shipment, mappedStatus, 'webhook');
+    } else if (!mappedStatus) {
+      logger.info('Shiprocket webhook: unrecognized status string, tracking-only', { rawStatus });
+    }
 
     await markEvent('SHIPROCKET', externalEventId, 'PROCESSED');
     return success(res, { message: 'Webhook processed' });

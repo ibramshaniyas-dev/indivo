@@ -6,7 +6,8 @@ import StatusBadge from '../../components/StatusBadge';
 import * as adminShipmentService from '../../services/adminShipment.service';
 
 // Mirrors Shiprocket's own seller-panel tabs (New / Ready To Ship / Pickup / In Transit /
-// Delivered / RTO / All Orders) so this reads the same way for anyone used to that dashboard.
+// Delivered / RTO / All Orders), plus a Cancelled tab for order- or shipment-level cancellations
+// (Shiprocket doesn't track our own order cancellations, so this one's ours).
 const TABS = [
   { key: 'NEW', label: 'New' },
   { key: 'READY_TO_SHIP', label: 'Ready To Ship' },

@@ -14,25 +14,35 @@ async function loadSellerOrder(sellerOrderId) {
 }
 
 // Mirrors Shiprocket's own seller-panel tabs (New / Ready To Ship / Pickup / In Transit /
-// Delivered / RTO / All Orders) so the admin Shipments page reads the same way. NOT_CREATED is a
-// virtual status (sh.id IS NULL, no shipments row yet) folded into "New" alongside
-// SHIPMENT_CREATED, since both mean "needs a shipping action next."
+// Delivered / RTO / Cancelled / All Orders) so the admin Shipments page reads the same way.
+// NOT_CREATED is a virtual status (sh.id IS NULL, no shipments row yet) folded into "New"
+// alongside SHIPMENT_CREATED, since both mean "needs a shipping action next." Every value of the
+// shipments.status enum is covered by exactly one bucket below (SHIPPED belongs with the other
+// "on the way" statuses in IN_TRANSIT; FAILED sits with CANCELLED, since neither has any
+// shipping action left to take) — a value left uncovered here would silently vanish from every
+// actionable tab and only ever turn up under "All Orders".
 const STATUS_BUCKETS = {
   NEW: ['NOT_CREATED', 'SHIPMENT_CREATED'],
   READY_TO_SHIP: ['AWB_ASSIGNED'],
   PICKUP: ['PICKUP_REQUESTED'],
-  IN_TRANSIT: ['PICKED_UP', 'IN_TRANSIT', 'OUT_FOR_DELIVERY'],
+  IN_TRANSIT: ['PICKED_UP', 'SHIPPED', 'IN_TRANSIT', 'OUT_FOR_DELIVERY'],
   DELIVERED: ['DELIVERED'],
   RTO: ['RTO_INITIATED', 'RTO_IN_TRANSIT', 'RTO_DELIVERED'],
 };
 
+// A seller_order can be "cancelled" two independent ways: the order itself was cancelled
+// (so.status), or just the Shiprocket booking was cancelled/failed while the order lives on
+// (sh.status) — e.g. an admin cancels a shipment to re-book with a different courier. Both need
+// to land somewhere visible instead of falling through every other bucket.
+const CANCELLED_CONDITION = "(so.status = 'CANCELLED' OR sh.status IN ('CANCELLED', 'FAILED'))";
+
 /**
  * Builds the SQL condition (and binds params) for a bucket key; returns null for 'ALL'/unknown.
- * A cancelled seller_order is excluded from every actionable bucket — there's no shipping action
- * left to take on it, so it shouldn't sit in "New" looking like it's still awaiting one. It's
- * still visible (with its CANCELLED order status) under "All Orders".
+ * Cancelled orders/shipments are excluded from every actionable bucket — there's no shipping
+ * action left to take — and get their own "Cancelled" bucket instead.
  */
 function bucketCondition(bucket, params) {
+  if (bucket === 'CANCELLED') return CANCELLED_CONDITION;
   const statuses = STATUS_BUCKETS[bucket];
   if (!statuses) return null;
   const parts = [];
@@ -42,7 +52,7 @@ function bucketCondition(bucket, params) {
     parts.push('sh.status IN (:bucketStatuses)');
     params.bucketStatuses = realStatuses;
   }
-  return `((${parts.join(' OR ')}) AND so.status != 'CANCELLED')`;
+  return `((${parts.join(' OR ')}) AND NOT ${CANCELLED_CONDITION})`;
 }
 
 /**
@@ -59,7 +69,7 @@ async function list(req, res, next) {
 
     const conditions = [];
     const params = {};
-    const bucketWhere = req.query.bucket === 'CANCELLED' ? "so.status = 'CANCELLED'" : req.query.bucket ? bucketCondition(req.query.bucket, params) : null;
+    const bucketWhere = req.query.bucket ? bucketCondition(req.query.bucket, params) : null;
     if (bucketWhere) {
       conditions.push(bucketWhere);
     } else if (req.query.status === 'NOT_CREATED') {
@@ -113,13 +123,13 @@ async function counts(req, res, next) {
   try {
     const [row] = await db.query(
       `SELECT
-         SUM(CASE WHEN (sh.id IS NULL OR sh.status = 'SHIPMENT_CREATED') AND so.status != 'CANCELLED' THEN 1 ELSE 0 END) AS NEW,
-         SUM(CASE WHEN sh.status = 'AWB_ASSIGNED' AND so.status != 'CANCELLED' THEN 1 ELSE 0 END) AS READY_TO_SHIP,
-         SUM(CASE WHEN sh.status = 'PICKUP_REQUESTED' AND so.status != 'CANCELLED' THEN 1 ELSE 0 END) AS PICKUP,
-         SUM(CASE WHEN sh.status IN ('PICKED_UP','IN_TRANSIT','OUT_FOR_DELIVERY') AND so.status != 'CANCELLED' THEN 1 ELSE 0 END) AS IN_TRANSIT,
+         SUM(CASE WHEN (sh.id IS NULL OR sh.status = 'SHIPMENT_CREATED') AND NOT ${CANCELLED_CONDITION} THEN 1 ELSE 0 END) AS NEW,
+         SUM(CASE WHEN sh.status = 'AWB_ASSIGNED' AND NOT ${CANCELLED_CONDITION} THEN 1 ELSE 0 END) AS READY_TO_SHIP,
+         SUM(CASE WHEN sh.status = 'PICKUP_REQUESTED' AND NOT ${CANCELLED_CONDITION} THEN 1 ELSE 0 END) AS PICKUP,
+         SUM(CASE WHEN sh.status IN ('PICKED_UP','SHIPPED','IN_TRANSIT','OUT_FOR_DELIVERY') AND NOT ${CANCELLED_CONDITION} THEN 1 ELSE 0 END) AS IN_TRANSIT,
          SUM(CASE WHEN sh.status = 'DELIVERED' THEN 1 ELSE 0 END) AS DELIVERED,
          SUM(CASE WHEN sh.status IN ('RTO_INITIATED','RTO_IN_TRANSIT','RTO_DELIVERED') THEN 1 ELSE 0 END) AS RTO,
-         SUM(CASE WHEN so.status = 'CANCELLED' THEN 1 ELSE 0 END) AS CANCELLED,
+         SUM(CASE WHEN ${CANCELLED_CONDITION} THEN 1 ELSE 0 END) AS CANCELLED,
          COUNT(*) AS ALL_ORDERS
        FROM seller_orders so
        LEFT JOIN shipments sh ON sh.seller_order_id = so.id`

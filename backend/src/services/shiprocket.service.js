@@ -1,6 +1,10 @@
 const client = require('./shiprocketClient');
 const db = require('../config/database');
 const logger = require('../utils/logger');
+// Reused for the same "cascade to DELIVERED" side effect both the webhook and the polling sync
+// need — borrowing this from the controller layer (already the established pattern; webhook.
+// controller.js does the same) rather than duplicating the seller_orders rollup logic here.
+const { refreshParentOrderStatus } = require('../controllers/sellerOrder.controller');
 
 // Endpoints below are Shiprocket's documented v1 "external" API (base:
 // https://apiv2.shiprocket.in/v1/external — see env.shiprocket.baseUrl). If Shiprocket has since
@@ -203,7 +207,75 @@ async function getShippingRates(params) {
   return getAvailableCouriers(params);
 }
 
-/** Polls Shiprocket for the latest status of a shipment and mirrors it into our shipments/tracking tables. */
+// Shiprocket's tracking API and webhook both report human-readable status strings that don't map
+// 1:1 onto our shipments.status enum. Single source of truth for that mapping — both the webhook
+// handler (webhook.controller.js) and the polling sync below (syncShipmentStatus) use this, so a
+// courier update reported either way lands on the same shipments.status value.
+const SHIPROCKET_STATUS_MAP = {
+  'pickup generated': 'PICKUP_REQUESTED',
+  'pickup scheduled': 'PICKUP_REQUESTED',
+  'picked up': 'PICKED_UP',
+  shipped: 'SHIPPED',
+  'in transit': 'IN_TRANSIT',
+  'out for delivery': 'OUT_FOR_DELIVERY',
+  delivered: 'DELIVERED',
+  cancelled: 'CANCELLED',
+  canceled: 'CANCELLED',
+  'rto initiated': 'RTO_INITIATED',
+  'rto in transit': 'RTO_IN_TRANSIT',
+  'rto delivered': 'RTO_DELIVERED',
+};
+
+function mapShiprocketStatus(rawStatus) {
+  if (!rawStatus) return null;
+  return SHIPROCKET_STATUS_MAP[String(rawStatus).trim().toLowerCase()] || null;
+}
+
+/** Most recent activity by date — Shiprocket doesn't guarantee the array's ordering. */
+function pickLatestActivity(activities) {
+  if (!activities || activities.length === 0) return null;
+  return activities.reduce((latest, activity) => {
+    const activityTime = new Date(activity.date || 0).getTime();
+    const latestTime = new Date(latest.date || 0).getTime();
+    return activityTime >= latestTime ? activity : latest;
+  });
+}
+
+/**
+ * Applies a mapped status to a shipment — the one place that actually moves shipments.status
+ * forward, whether the trigger was the webhook or the polling sync. DELIVERED cascades to the
+ * parent seller_order (and from there the parent order), same as every other order-completion
+ * path in this codebase.
+ */
+async function applyShipmentStatus(shipment, mappedStatus, source) {
+  await db.transaction(async (tx) => {
+    await tx.query('UPDATE shipments SET status = :status WHERE id = :id', { id: shipment.id, status: mappedStatus });
+
+    if (mappedStatus === 'DELIVERED') {
+      const sellerOrder = await tx.queryOne('SELECT id, order_id, status FROM seller_orders WHERE id = :id', {
+        id: shipment.seller_order_id,
+      });
+      if (sellerOrder && sellerOrder.status !== 'CANCELLED' && sellerOrder.status !== 'DELIVERED') {
+        await tx.query("UPDATE seller_orders SET status = 'DELIVERED' WHERE id = :id", { id: sellerOrder.id });
+        await tx.query(
+          `INSERT INTO order_status_history (seller_order_id, status, note) VALUES (:id, 'DELIVERED', :note)`,
+          { id: sellerOrder.id, note: `Delivered — synced from Shiprocket (${source})` }
+        );
+        await refreshParentOrderStatus(sellerOrder.order_id, tx);
+      }
+    }
+  });
+  logger.info('Shiprocket: shipment status updated', { shipmentId: shipment.id, status: mappedStatus, source });
+}
+
+/**
+ * Polls Shiprocket for the latest status of a shipment and mirrors it into our tables: every new
+ * tracking activity is logged (shipment_tracking, deduped via its unique key), and — this is the
+ * part that used to be missing — shipments.status itself is advanced to match the most recent
+ * activity, so the status badge shown across the admin/seller panels actually reflects reality
+ * instead of freezing at whatever the last manual action (AWB assigned, pickup requested) set it
+ * to. Called by the manual "Refresh Tracking" button and by the scheduled sync job.
+ */
 async function syncShipmentStatus(sellerOrderId) {
   const shipment = await db.queryOne('SELECT * FROM shipments WHERE seller_order_id = :id', { id: sellerOrderId });
   if (!shipment?.tracking_number) return null;
@@ -220,6 +292,15 @@ async function syncShipmentStatus(sellerOrderId) {
       }
     );
   }
+
+  const latest = pickLatestActivity(activities);
+  const mappedStatus = latest ? mapShiprocketStatus(latest.status) : null;
+  if (mappedStatus && mappedStatus !== shipment.status) {
+    await applyShipmentStatus(shipment, mappedStatus, 'polling sync');
+  } else if (latest && !mappedStatus) {
+    logger.info('Shiprocket: unrecognized status string during sync, tracking-only', { sellerOrderId, rawStatus: latest.status });
+  }
+
   return tracking;
 }
 
@@ -237,4 +318,5 @@ module.exports = {
   authenticate, ensurePickupLocation, createOrder, getAvailableCouriers, generateAWB, requestPickup,
   generateLabel, trackShipment, cancelShipment, getShipmentDetails, getShippingRates,
   syncShipmentStatus, getCODRemittance, reconcileCOD,
+  mapShiprocketStatus, applyShipmentStatus,
 };

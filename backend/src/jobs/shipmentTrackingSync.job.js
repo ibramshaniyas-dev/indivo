@@ -5,7 +5,9 @@ const logger = require('../utils/logger');
 const shiprocketService = require('../services/shiprocket.service');
 
 // A shipment in one of these is done moving — no point polling it anymore.
-const TERMINAL_STATUSES = ['DELIVERED', 'CANCELLED', 'RTO_DELIVERED'];
+const TERMINAL_STATUSES = ['DELIVERED', 'CANCELLED', 'FAILED', 'RTO_DELIVERED'];
+
+let isRunning = false;
 
 /**
  * Fallback for the Shiprocket webhook: polls every shipment that has an AWB and isn't in a
@@ -39,11 +41,24 @@ async function runOnce() {
   return { checked: shipments.length, failed };
 }
 
+/** Runs runOnce() with an overlap guard — a slow run (many shipments, network latency) must
+ * never stack with the next scheduled tick and double-hit the same shipments. */
+function runGuarded() {
+  if (isRunning) {
+    logger.warn('Shipment tracking sync: previous run still in progress, skipping this tick');
+    return;
+  }
+  isRunning = true;
+  runOnce()
+    .catch((err) => logger.error('Shipment tracking sync: run failed', { error: err.message }))
+    .finally(() => { isRunning = false; });
+}
+
 function start() {
-  cron.schedule(env.shiprocket.trackingSyncCron, () => {
-    runOnce().catch((err) => logger.error('Shipment tracking sync: run failed', { error: err.message }));
-  });
+  cron.schedule(env.shiprocket.trackingSyncCron, runGuarded);
   logger.info('Shipment tracking sync job scheduled', { cron: env.shiprocket.trackingSyncCron });
+  // Run once at boot too — otherwise a fresh deploy waits up to a full interval before the first sync.
+  runGuarded();
 }
 
 module.exports = { start, runOnce };
