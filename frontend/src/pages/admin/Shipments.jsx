@@ -14,6 +14,7 @@ const TABS = [
   { key: 'IN_TRANSIT', label: 'In Transit' },
   { key: 'DELIVERED', label: 'Delivered' },
   { key: 'RTO', label: 'RTO' },
+  { key: 'CANCELLED', label: 'Cancelled' },
   { key: 'ALL', label: 'All Orders' },
 ];
 
@@ -59,7 +60,12 @@ export default function AdminShipments() {
     { key: 'payment_method', label: 'Payment' },
     {
       key: 'shipment_status', label: 'Shipment Status',
-      render: (r) => (r.shipment_id ? <StatusBadge status={r.shipment_status} /> : <StatusBadge status="NOT_CREATED" />),
+      render: (r) => {
+        // A cancelled order's old shipment status (e.g. SHIPMENT_CREATED) is stale and would
+        // otherwise read as "still needs shipping" — show the cancellation instead.
+        if (r.order_status === 'CANCELLED') return <StatusBadge status="CANCELLED" />;
+        return r.shipment_id ? <StatusBadge status={r.shipment_status} /> : <StatusBadge status="NOT_CREATED" />;
+      },
     },
     {
       key: 'courier_name', label: 'Courier / AWB',

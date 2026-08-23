@@ -26,7 +26,12 @@ const STATUS_BUCKETS = {
   RTO: ['RTO_INITIATED', 'RTO_IN_TRANSIT', 'RTO_DELIVERED'],
 };
 
-/** Builds the SQL condition (and binds params) for a bucket key; returns null for 'ALL'/unknown. */
+/**
+ * Builds the SQL condition (and binds params) for a bucket key; returns null for 'ALL'/unknown.
+ * A cancelled seller_order is excluded from every actionable bucket — there's no shipping action
+ * left to take on it, so it shouldn't sit in "New" looking like it's still awaiting one. It's
+ * still visible (with its CANCELLED order status) under "All Orders".
+ */
 function bucketCondition(bucket, params) {
   const statuses = STATUS_BUCKETS[bucket];
   if (!statuses) return null;
@@ -37,7 +42,7 @@ function bucketCondition(bucket, params) {
     parts.push('sh.status IN (:bucketStatuses)');
     params.bucketStatuses = realStatuses;
   }
-  return `(${parts.join(' OR ')})`;
+  return `((${parts.join(' OR ')}) AND so.status != 'CANCELLED')`;
 }
 
 /**
@@ -54,7 +59,7 @@ async function list(req, res, next) {
 
     const conditions = [];
     const params = {};
-    const bucketWhere = req.query.bucket ? bucketCondition(req.query.bucket, params) : null;
+    const bucketWhere = req.query.bucket === 'CANCELLED' ? "so.status = 'CANCELLED'" : req.query.bucket ? bucketCondition(req.query.bucket, params) : null;
     if (bucketWhere) {
       conditions.push(bucketWhere);
     } else if (req.query.status === 'NOT_CREATED') {
@@ -108,12 +113,13 @@ async function counts(req, res, next) {
   try {
     const [row] = await db.query(
       `SELECT
-         SUM(CASE WHEN sh.id IS NULL OR sh.status = 'SHIPMENT_CREATED' THEN 1 ELSE 0 END) AS NEW,
-         SUM(CASE WHEN sh.status = 'AWB_ASSIGNED' THEN 1 ELSE 0 END) AS READY_TO_SHIP,
-         SUM(CASE WHEN sh.status = 'PICKUP_REQUESTED' THEN 1 ELSE 0 END) AS PICKUP,
-         SUM(CASE WHEN sh.status IN ('PICKED_UP','IN_TRANSIT','OUT_FOR_DELIVERY') THEN 1 ELSE 0 END) AS IN_TRANSIT,
+         SUM(CASE WHEN (sh.id IS NULL OR sh.status = 'SHIPMENT_CREATED') AND so.status != 'CANCELLED' THEN 1 ELSE 0 END) AS NEW,
+         SUM(CASE WHEN sh.status = 'AWB_ASSIGNED' AND so.status != 'CANCELLED' THEN 1 ELSE 0 END) AS READY_TO_SHIP,
+         SUM(CASE WHEN sh.status = 'PICKUP_REQUESTED' AND so.status != 'CANCELLED' THEN 1 ELSE 0 END) AS PICKUP,
+         SUM(CASE WHEN sh.status IN ('PICKED_UP','IN_TRANSIT','OUT_FOR_DELIVERY') AND so.status != 'CANCELLED' THEN 1 ELSE 0 END) AS IN_TRANSIT,
          SUM(CASE WHEN sh.status = 'DELIVERED' THEN 1 ELSE 0 END) AS DELIVERED,
          SUM(CASE WHEN sh.status IN ('RTO_INITIATED','RTO_IN_TRANSIT','RTO_DELIVERED') THEN 1 ELSE 0 END) AS RTO,
+         SUM(CASE WHEN so.status = 'CANCELLED' THEN 1 ELSE 0 END) AS CANCELLED,
          COUNT(*) AS ALL_ORDERS
        FROM seller_orders so
        LEFT JOIN shipments sh ON sh.seller_order_id = so.id`
@@ -122,7 +128,7 @@ async function counts(req, res, next) {
       data: {
         NEW: Number(row.NEW), READY_TO_SHIP: Number(row.READY_TO_SHIP), PICKUP: Number(row.PICKUP),
         IN_TRANSIT: Number(row.IN_TRANSIT), DELIVERED: Number(row.DELIVERED), RTO: Number(row.RTO),
-        ALL: Number(row.ALL_ORDERS),
+        CANCELLED: Number(row.CANCELLED), ALL: Number(row.ALL_ORDERS),
       },
     });
   } catch (err) {
