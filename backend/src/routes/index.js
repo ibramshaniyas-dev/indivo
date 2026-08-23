@@ -12,6 +12,7 @@ const adminSellerRoutes = require('./admin/seller.routes');
 const adminProductRoutes = require('./admin/product.routes');
 const adminUserRoutes = require('./admin/adminUser.routes');
 const adminRoleRoutes = require('./admin/role.routes');
+const adminCustomerRoutes = require('./admin/customer.routes');
 
 const router = express.Router();
 
@@ -28,6 +29,7 @@ router.use('/admin/sellers', adminSellerRoutes);
 router.use('/admin/products', adminProductRoutes);
 router.use('/admin/users', adminUserRoutes);
 router.use('/admin/roles', adminRoleRoutes);
+router.use('/admin/customers', adminCustomerRoutes);
 
 // Phase 1 (remaining): customers, wishlist, checkout, orders,
 // payments, admin dashboard — mounted here as each ships.
