@@ -11,6 +11,40 @@ const { publicUrlFor, relativePathFromFile } = require('../services/storage.serv
 
 const AGREEMENT_VERSION = '1.0';
 
+async function getStore(req, res, next) {
+  try {
+    const seller = await db.queryOne(
+      "SELECT id, public_id, display_name, business_category, created_at FROM sellers WHERE id = :id AND status = 'APPROVED'",
+      { id: req.params.id }
+    );
+    if (!seller) throw ApiError.notFound('Seller not found');
+
+    const address = await db.queryOne(
+      "SELECT city, state FROM seller_addresses WHERE seller_id = :id AND type = 'REGISTERED' LIMIT 1",
+      { id: seller.id }
+    );
+    const stats = await db.queryOne(
+      `SELECT COUNT(*) AS productCount,
+              (SELECT ROUND(AVG(r.rating), 1) FROM reviews r
+                 JOIN products p2 ON p2.id = r.product_id WHERE p2.seller_id = :id AND r.status = 'APPROVED') AS rating
+       FROM products WHERE seller_id = :id AND status = 'ACTIVE'`,
+      { id: seller.id }
+    );
+
+    return success(res, {
+      data: {
+        ...seller,
+        city: address?.city || null,
+        state: address?.state || null,
+        productCount: Number(stats.productCount),
+        rating: Number(stats.rating) || 0,
+      },
+    });
+  } catch (err) {
+    return next(err);
+  }
+}
+
 async function register(req, res, next) {
   try {
     const { companyName, displayName, businessCategory, contactPerson, mobile, email, password } = req.body;
@@ -227,6 +261,7 @@ async function submit(req, res, next) {
 module.exports = {
   register,
   getMe,
+  getStore,
   updateBusiness,
   uploadDocument,
   removeDocument,

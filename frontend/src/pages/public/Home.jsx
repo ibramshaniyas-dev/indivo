@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Box, Container, Typography, Grid, Button } from '@mui/material';
+import { Box, Container, Typography, Grid } from '@mui/material';
 import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded';
 import { Link } from 'react-router-dom';
 import SectionHeader from '../../components/SectionHeader';
 import EmptyState from '../../components/EmptyState';
 import ProductCard from '../../components/ProductCard';
 import ProductCardSkeleton from '../../components/ProductCardSkeleton';
+import HeroSlider from '../../components/HeroSlider';
 import { listProducts } from '../../services/product.service';
 import useWishlistToggle from '../../hooks/useWishlistToggle';
 import api from '../../services/api';
@@ -38,6 +39,7 @@ export default function Home() {
   const [categories, setCategories] = useState([]);
   const [trending, setTrending] = useState([]);
   const [bestsellers, setBestsellers] = useState([]);
+  const [banners, setBanners] = useState([]);
   const [loading, setLoading] = useState(true);
   const { wishlistIds, toggle } = useWishlistToggle();
 
@@ -46,36 +48,20 @@ export default function Home() {
       api.get('/categories', { params: { parentId: 'null' } }),
       listProducts({ sort: 'newest', limit: 12 }),
       listProducts({ sort: 'rating', limit: 6 }),
+      api.get('/cms/banners'),
     ])
-      .then(([categoryRes, trendingRes, bestsellerRes]) => {
+      .then(([categoryRes, trendingRes, bestsellerRes, bannerRes]) => {
         setCategories(categoryRes.data.data);
         setTrending(trendingRes.data);
         setBestsellers(bestsellerRes.data);
+        setBanners(bannerRes.data.data);
       })
       .finally(() => setLoading(false));
   }, []);
 
   return (
     <Box>
-      <Box
-        sx={{
-          background: 'linear-gradient(135deg, #161513 0%, #332F28 100%)',
-          color: '#fff', py: { xs: 6, md: 10 },
-        }}
-      >
-        <Container maxWidth="xl">
-          <Typography variant="h3" sx={{ maxWidth: 560, mb: 2 }}>
-            Shop from thousands of trusted sellers, all in one place.
-          </Typography>
-          <Typography variant="body1" sx={{ maxWidth: 480, opacity: 0.85, mb: 3 }}>
-            INDIVO connects you directly with independent businesses across India — fashion,
-            fabrics, fragrances and lifestyle.
-          </Typography>
-          <Button component={Link} to="/search" variant="contained" color="secondary" size="large">
-            Shop Now
-          </Button>
-        </Container>
-      </Box>
+      <HeroSlider banners={banners} />
 
       <Container maxWidth="xl" sx={{ py: 5 }}>
         <SectionHeader title="Shop by Category" subtitle="Explore our most popular categories" />

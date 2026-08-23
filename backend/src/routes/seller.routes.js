@@ -13,6 +13,7 @@ const { uploadSellerDocument, uploadProductMedia } = require('../middleware/uplo
 const router = express.Router();
 
 router.post('/register', authLimiter, validators.register, validate, controller.register);
+router.get('/:id/store', controller.getStore);
 
 router.get('/me', authenticate, sellerScope, controller.getMe);
 router.put('/business', authenticate, sellerScope, validators.business, validate, controller.updateBusiness);

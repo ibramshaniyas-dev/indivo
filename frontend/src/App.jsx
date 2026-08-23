@@ -8,6 +8,7 @@ import Home from './pages/public/Home';
 import SearchResults from './pages/public/SearchResults';
 import ProductDetail from './pages/public/ProductDetail';
 import Cart from './pages/public/Cart';
+import SellerStore from './pages/public/SellerStore';
 import Checkout from './pages/public/Checkout';
 import MyOrders from './pages/public/MyOrders';
 import OrderDetail from './pages/public/OrderDetail';
@@ -80,6 +81,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/search" element={<SearchResults />} />
           <Route path="/product/:slug" element={<ProductDetail />} />
+          <Route path="/store/:id" element={<SellerStore />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
