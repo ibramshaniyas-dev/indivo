@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Box, Container, Grid, Typography, Paper, TextField, Button, Divider, Alert,
   RadioGroup, FormControlLabel, Radio, CircularProgress, Chip,
@@ -34,6 +34,10 @@ export default function Checkout() {
   const [retryingPayment, setRetryingPayment] = useState(false);
 
   const idempotencyKey = useMemo(() => crypto.randomUUID(), []);
+  // Redux's resetCart() can re-render this still-mounted component (with an empty cart) before
+  // the route change actually commits — a ref flips synchronously, unlike state, so it can't
+  // race with that re-render the way a boolean state flag could.
+  const orderPlacedRef = useRef(false);
 
   useEffect(() => {
     Promise.all([getCart(), listAddresses(), getPaymentConfig()]).then(([cartSummary, addresses, payConfig]) => {
@@ -84,8 +88,9 @@ export default function Checkout() {
         });
       }
 
-      dispatch(resetCart());
+      orderPlacedRef.current = true;
       navigate(`/account/orders/${result.orderId}`, { state: { justPlaced: true } });
+      dispatch(resetCart());
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Failed to place order');
       if (paymentMethod === 'ONLINE') setRetryingPayment(true);
@@ -96,7 +101,7 @@ export default function Checkout() {
 
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}><CircularProgress /></Box>;
 
-  if (cart.items.length === 0) {
+  if (cart.items.length === 0 && !orderPlacedRef.current) {
     navigate('/cart');
     return null;
   }
