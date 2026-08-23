@@ -22,7 +22,9 @@ app.use(
   })
 );
 app.use(compression());
-app.use(express.json({ limit: '2mb' }));
+// Captures the exact raw bytes alongside the parsed body — Razorpay's webhook signature is an
+// HMAC over the raw JSON payload, which is lost once express.json() parses/re-serializes it.
+app.use(express.json({ limit: '2mb', verify: (req, res, buf) => { req.rawBody = buf; } }));
 app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 app.use(
   morgan(env.isProduction ? 'combined' : 'dev', {

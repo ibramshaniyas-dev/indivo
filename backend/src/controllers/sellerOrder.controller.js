@@ -125,4 +125,4 @@ async function updateStatus(req, res, next) {
   }
 }
 
-module.exports = { listMine, getMineById, updateStatus };
+module.exports = { listMine, getMineById, updateStatus, refreshParentOrderStatus };
