@@ -21,16 +21,26 @@ async function seedPermissions() {
 // Fully syncs role_permissions to `permissionCodes` (deletes anything no longer listed) so
 // re-running the seed after a starter-role definition changes doesn't leave stale, over-broad
 // grants behind — e.g. MANAGER losing access to `users`/`roles` must actually revoke it.
+//
+// NOTE: can't lean on `INSERT ... ON DUPLICATE KEY UPDATE` against the (scope, name, seller_id)
+// unique key here — seller_id is NULL for every admin role, and MySQL/InnoDB never treats two
+// NULLs as equal for uniqueness, so that insert would silently create a duplicate role row on
+// every re-run instead of updating the existing one. Select-then-insert-or-update explicitly.
 async function seedRole(name, { isSystem = false, permissionCodes }) {
-  await db.query(
-    `INSERT INTO roles (name, scope, is_system) VALUES (:name, 'ADMIN', :isSystem)
-     ON DUPLICATE KEY UPDATE is_system = VALUES(is_system)`,
-    { name, isSystem: isSystem ? 1 : 0 }
-  );
-  const role = await db.queryOne(
+  let role = await db.queryOne(
     `SELECT id FROM roles WHERE scope = 'ADMIN' AND name = :name AND seller_id IS NULL`,
     { name }
   );
+
+  if (role) {
+    await db.query('UPDATE roles SET is_system = :isSystem WHERE id = :id', { id: role.id, isSystem: isSystem ? 1 : 0 });
+  } else {
+    const result = await db.query(
+      `INSERT INTO roles (name, scope, is_system) VALUES (:name, 'ADMIN', :isSystem)`,
+      { name, isSystem: isSystem ? 1 : 0 }
+    );
+    role = { id: result.insertId };
+  }
 
   await db.query('DELETE FROM role_permissions WHERE role_id = :roleId', { roleId: role.id });
 
