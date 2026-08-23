@@ -58,6 +58,9 @@ module.exports = {
     password: process.env.SHIPROCKET_PASSWORD || '',
     baseUrl: process.env.SHIPROCKET_BASE_URL || 'https://apiv2.shiprocket.in/v1/external',
     webhookToken: process.env.SHIPROCKET_WEBHOOK_TOKEN || '',
+    // Fallback for when the Shiprocket webhook isn't configured (or misses an event) — a cron
+    // job polls every non-final shipment on this schedule. Standard node-cron syntax.
+    trackingSyncCron: process.env.SHIPMENT_TRACKING_SYNC_CRON || '*/10 * * * *',
   },
 
   razorpay: {
