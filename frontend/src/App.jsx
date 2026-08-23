@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom';
 import CustomerLayout from './layouts/CustomerLayout';
 import SellerDashboardLayout from './layouts/SellerDashboardLayout';
 import AdminLayout from './layouts/AdminLayout';
@@ -8,6 +8,10 @@ import Home from './pages/public/Home';
 import SearchResults from './pages/public/SearchResults';
 import ProductDetail from './pages/public/ProductDetail';
 import Cart from './pages/public/Cart';
+import Wishlist from './pages/public/Wishlist';
+import Account from './pages/public/Account';
+import CmsPage from './pages/public/CmsPage';
+import Contact from './pages/public/Contact';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import SellerLoginPage from './pages/auth/SellerLogin';
@@ -71,6 +75,16 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/sell" element={<SellerRegister />} />
+          <Route path="/about" element={<CmsPage slug="about" />} />
+          <Route path="/contact" element={<Contact />} />
+
+          <Route element={<ProtectedRoute allow={['CUSTOMER']} loginPath="/login"><Outlet /></ProtectedRoute>}>
+            <Route path="/wishlist" element={<Wishlist />} />
+            <Route path="/account" element={<Account />} />
+            <Route path="/account/orders" element={<ComingSoon title="My Orders" />} />
+            <Route path="/account/addresses" element={<ComingSoon title="Addresses" />} />
+            <Route path="/account/reviews" element={<ComingSoon title="My Reviews" />} />
+          </Route>
         </Route>
 
         <Route path="/seller/login" element={<SellerLoginPage />} />

@@ -14,14 +14,15 @@ import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { clearUser } from '../store/slices/authSlice';
 import { setCart, resetCart } from '../store/slices/cartSlice';
+import { setWishlist, resetWishlist } from '../store/slices/wishlistSlice';
 import { logout } from '../services/auth.service';
 import { getCart } from '../services/cart.service';
+import { getWishlist } from '../services/wishlist.service';
 
 const FOOTER_COLUMNS = [
-  { title: 'INDIVO', links: [{ label: 'About Us', href: '/about' }, { label: 'Careers', href: '#' }, { label: 'Press', href: '#' }] },
-  { title: 'Customer Service', links: [{ label: 'Track Order', href: '/orders' }, { label: 'Returns & Refunds', href: '#' }, { label: 'Contact Us', href: '/contact' }] },
-  { title: 'Sell on INDIVO', links: [{ label: 'Become a Seller', href: '/sell' }, { label: 'Seller Login', href: '/login' }] },
-  { title: 'Legal', links: [{ label: 'Privacy Policy', href: '#' }, { label: 'Terms of Use', href: '#' }, { label: 'Seller Policy', href: '#' }] },
+  { title: 'INDIVO', links: [{ label: 'About Us', href: '/about' }] },
+  { title: 'Customer Service', links: [{ label: 'Track Order', href: '/account/orders' }, { label: 'Contact Us', href: '/contact' }] },
+  { title: 'Sell on INDIVO', links: [{ label: 'Become a Seller', href: '/sell' }, { label: 'Seller Login', href: '/seller/login' }] },
 ];
 
 export default function CustomerLayout() {
@@ -34,6 +35,7 @@ export default function CustomerLayout() {
   useEffect(() => {
     if (isAuthenticated && user?.userType === 'CUSTOMER') {
       getCart().then((summary) => dispatch(setCart(summary))).catch(() => {});
+      getWishlist().then((items) => dispatch(setWishlist(items))).catch(() => {});
     }
   }, [isAuthenticated]);
 
@@ -41,6 +43,7 @@ export default function CustomerLayout() {
     await logout();
     dispatch(clearUser());
     dispatch(resetCart());
+    dispatch(resetWishlist());
     navigate('/login');
   };
 
@@ -135,7 +138,7 @@ export default function CustomerLayout() {
 
       <Box component="footer" sx={{ bgcolor: 'primary.main', color: 'rgba(255,255,255,0.85)', mt: 6, pt: 6, pb: { xs: 10, md: 4 } }}>
         <Container maxWidth="xl">
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 4 }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(3, 1fr)' }, gap: 4 }}>
             {FOOTER_COLUMNS.map((col) => (
               <Box key={col.title}>
                 <Typography variant="subtitle2" sx={{ color: '#fff', mb: 1.5 }}>{col.title}</Typography>

@@ -3,6 +3,7 @@ import {
   Box, Container, Grid, Typography, Button, Chip, Divider, Tabs, Tab, IconButton, CircularProgress, Alert, Snackbar,
 } from '@mui/material';
 import FavoriteBorderRoundedIcon from '@mui/icons-material/FavoriteBorderRounded';
+import FavoriteRoundedIcon from '@mui/icons-material/FavoriteRounded';
 import ShoppingCartRoundedIcon from '@mui/icons-material/ShoppingCartRounded';
 import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
 import VerifiedUserOutlinedIcon from '@mui/icons-material/VerifiedUserOutlined';
@@ -16,12 +17,14 @@ import ProductCard from '../../components/ProductCard';
 import { getProductBySlug, listProducts } from '../../services/product.service';
 import { addToCart } from '../../services/cart.service';
 import { setCart } from '../../store/slices/cartSlice';
+import useWishlistToggle from '../../hooks/useWishlistToggle';
 
 export default function ProductDetail() {
   const { slug } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const { wishlistIds, toggle } = useWishlistToggle();
   const [cartError, setCartError] = useState('');
   const [cartMessage, setCartMessage] = useState('');
   const [addingToCart, setAddingToCart] = useState(false);
@@ -170,8 +173,12 @@ export default function ProductDetail() {
             >
               Buy Now
             </Button>
-            <IconButton size="large" sx={{ border: '1.5px solid', borderColor: 'divider', borderRadius: 2.5 }}>
-              <FavoriteBorderRoundedIcon />
+            <IconButton
+              size="large"
+              onClick={() => toggle(product)}
+              sx={{ border: '1.5px solid', borderColor: 'divider', borderRadius: 2.5 }}
+            >
+              {wishlistIds.includes(product.id) ? <FavoriteRoundedIcon color="error" /> : <FavoriteBorderRoundedIcon />}
             </IconButton>
           </Box>
           <Snackbar open={Boolean(cartMessage)} autoHideDuration={2500} onClose={() => setCartMessage('')} message={cartMessage} />

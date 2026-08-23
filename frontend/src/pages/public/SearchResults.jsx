@@ -10,6 +10,7 @@ import ProductCard from '../../components/ProductCard';
 import ProductCardSkeleton from '../../components/ProductCardSkeleton';
 import EmptyState from '../../components/EmptyState';
 import { listProducts } from '../../services/product.service';
+import useWishlistToggle from '../../hooks/useWishlistToggle';
 import api from '../../services/api';
 
 const SORT_OPTIONS = [
@@ -67,6 +68,7 @@ export default function SearchResults() {
   const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterOpen, setFilterOpen] = useState(false);
+  const { wishlistIds, toggle } = useWishlistToggle();
 
   const filters = useMemo(() => Object.fromEntries(searchParams.entries()), [searchParams]);
 
@@ -148,7 +150,7 @@ export default function SearchResults() {
               <Grid container spacing={2}>
                 {products.map((p) => (
                   <Grid item xs={6} sm={4} lg={3} key={p.id}>
-                    <ProductCard product={p} />
+                    <ProductCard product={p} wishlisted={wishlistIds.includes(p.id)} onToggleWishlist={() => toggle(p)} />
                   </Grid>
                 ))}
               </Grid>
