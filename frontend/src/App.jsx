@@ -8,6 +8,9 @@ import Home from './pages/public/Home';
 import SearchResults from './pages/public/SearchResults';
 import ProductDetail from './pages/public/ProductDetail';
 import Cart from './pages/public/Cart';
+import Checkout from './pages/public/Checkout';
+import MyOrders from './pages/public/MyOrders';
+import OrderDetail from './pages/public/OrderDetail';
 import Wishlist from './pages/public/Wishlist';
 import Account from './pages/public/Account';
 import CmsPage from './pages/public/CmsPage';
@@ -23,11 +26,15 @@ import OnboardingWizard from './pages/seller/OnboardingWizard';
 import SellerDashboard from './pages/seller/Dashboard';
 import SellerProducts from './pages/seller/Products';
 import SellerProductForm from './pages/seller/ProductForm';
+import SellerOrders from './pages/seller/Orders';
+import SellerOrderDetail from './pages/seller/OrderDetail';
 
 import AdminDashboard from './pages/admin/Dashboard';
 import SellerApprovals from './pages/admin/SellerApprovals';
 import AdminProducts from './pages/admin/Products';
 import AdminCustomers from './pages/admin/Customers';
+import AdminOrders from './pages/admin/Orders';
+import AdminOrderDetail from './pages/admin/OrderDetail';
 import Categories from './pages/admin/Categories';
 import Brands from './pages/admin/Brands';
 import AdminUsers from './pages/admin/AdminUsers';
@@ -44,7 +51,8 @@ function adminRoutes() {
       <Route path="brands" element={<ProtectedRoute permission="brands.view"><Brands /></ProtectedRoute>} />
       <Route path="attributes" element={<ProtectedRoute permission="attributes.view"><ComingSoon title="Attributes" /></ProtectedRoute>} />
       <Route path="customers" element={<ProtectedRoute permission="customers.view"><AdminCustomers /></ProtectedRoute>} />
-      <Route path="orders" element={<ProtectedRoute permission="orders.view"><ComingSoon title="Orders" /></ProtectedRoute>} />
+      <Route path="orders" element={<ProtectedRoute permission="orders.view"><AdminOrders /></ProtectedRoute>} />
+      <Route path="orders/:id" element={<ProtectedRoute permission="orders.view"><AdminOrderDetail /></ProtectedRoute>} />
       <Route path="returns" element={<ProtectedRoute permission="returns.view"><ComingSoon title="Returns" /></ProtectedRoute>} />
       <Route path="payments" element={<ProtectedRoute permission="payments.view"><ComingSoon title="Payments" /></ProtectedRoute>} />
       <Route path="refunds" element={<ProtectedRoute permission="refunds.view"><ComingSoon title="Refunds" /></ProtectedRoute>} />
@@ -81,8 +89,10 @@ export default function App() {
 
           <Route element={<ProtectedRoute allow={['CUSTOMER']} loginPath="/login"><Outlet /></ProtectedRoute>}>
             <Route path="/wishlist" element={<Wishlist />} />
+            <Route path="/checkout" element={<Checkout />} />
             <Route path="/account" element={<Account />} />
-            <Route path="/account/orders" element={<ComingSoon title="My Orders" />} />
+            <Route path="/account/orders" element={<MyOrders />} />
+            <Route path="/account/orders/:id" element={<OrderDetail />} />
             <Route path="/account/addresses" element={<ComingSoon title="Addresses" />} />
             <Route path="/account/reviews" element={<ComingSoon title="My Reviews" />} />
           </Route>
@@ -105,7 +115,8 @@ export default function App() {
           <Route path="/seller/products/new" element={<SellerProductForm />} />
           <Route path="/seller/products/:id/edit" element={<SellerProductForm />} />
           <Route path="/seller/inventory" element={<ComingSoon title="Inventory" />} />
-          <Route path="/seller/orders" element={<ComingSoon title="Orders" />} />
+          <Route path="/seller/orders" element={<SellerOrders />} />
+          <Route path="/seller/orders/:id" element={<SellerOrderDetail />} />
           <Route path="/seller/profile" element={<ComingSoon title="Profile & Settings" />} />
         </Route>
 

@@ -1,8 +1,10 @@
 const express = require('express');
 const controller = require('../controllers/seller.controller');
 const productController = require('../controllers/product.controller');
+const sellerOrderController = require('../controllers/sellerOrder.controller');
 const validators = require('../validators/seller.validator');
 const productValidators = require('../validators/product.validator');
+const sellerOrderValidators = require('../validators/sellerOrder.validator');
 const validate = require('../middleware/validate.middleware');
 const { authenticate, sellerScope, requireApprovedSeller } = require('../middleware/auth.middleware');
 const { authLimiter } = require('../middleware/rateLimit.middleware');
@@ -39,5 +41,12 @@ productRouter.post('/:id/variants', productValidators.idParam, productValidators
 productRouter.post('/:id/images', productValidators.idParam, validate, uploadProductMedia.array('images', 8), productController.uploadImages);
 productRouter.post('/:id/submit', productValidators.idParam, validate, productController.submitForReview);
 router.use('/products', productRouter);
+
+const orderRouter = express.Router();
+orderRouter.use(authenticate, sellerScope, requireApprovedSeller);
+orderRouter.get('/', sellerOrderController.listMine);
+orderRouter.get('/:id', sellerOrderController.getMineById);
+orderRouter.post('/:id/status', sellerOrderValidators.updateStatus, validate, sellerOrderController.updateStatus);
+router.use('/orders', orderRouter);
 
 module.exports = router;
