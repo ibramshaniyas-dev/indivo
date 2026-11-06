@@ -93,7 +93,7 @@ export default function Product360Viewer({ image, alt = '' }) {
             '& img': { userSelect: 'none', pointerEvents: 'none' },
           }}
         >
-          <ProductImage src={image} alt={alt} eager />
+          <ProductImage src={image} alt={alt} eager sizes="(max-width: 900px) 100vw, 680px" />
         </Box>
       </Box>
     </Box>

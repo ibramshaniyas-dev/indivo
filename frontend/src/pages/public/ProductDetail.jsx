@@ -99,7 +99,7 @@ export default function ProductDetail() {
               <Product360Viewer image={images[0].url} alt={product.name} />
             ) : (
               <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3, overflow: 'hidden' }}>
-                <ProductImage src={images[activeImage]?.url} alt={product.name} eager />
+                <ProductImage src={images[activeImage]?.url} alt={product.name} eager sizes="(max-width: 900px) 100vw, 680px" />
               </Box>
             )}
             {images.length > 1 && (
@@ -117,7 +117,7 @@ export default function ProductDetail() {
                       opacity: i === activeImage ? 1 : 0.75, transition: 'all 0.2s ease', '&:hover': { opacity: 1 },
                     }}
                   >
-                    <ProductImage src={img.url} alt="" placeholderLabel={false} />
+                    <ProductImage src={img.url} alt="" placeholderLabel={false} sizes="80px" />
                   </Box>
                 ))}
               </Box>

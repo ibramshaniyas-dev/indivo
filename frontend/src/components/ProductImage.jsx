@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Box, Typography } from '@mui/material';
 import { getCategoryIcon } from './CategoryIcon';
-import { realImage } from '../utils/images';
+import { realImage, responsiveImage } from '../utils/images';
 
 /**
  * Shows a real product photo sharp and uncropped: rendered as an <img> (not a CSS background, so
@@ -14,12 +14,19 @@ import { realImage } from '../utils/images';
  */
 export default function ProductImage({
   src, alt = '', kind, ratio = '1 / 1', fit = 'contain', rounded = 0, placeholderLabel = true, eager = false, sx, imgSx,
+  sizes = '(max-width: 600px) 50vw, (max-width: 1200px) 33vw, 320px',
 }) {
   const url = realImage(src);
   const [failed, setFailed] = useState(false);
+  const [useFallback, setUseFallback] = useState(false);
   const [loaded, setLoaded] = useState(false);
-  useEffect(() => { setFailed(false); setLoaded(false); }, [url]);
+  useEffect(() => { setFailed(false); setUseFallback(false); setLoaded(false); }, [url]);
   const showImage = url && !failed;
+  const responsive = responsiveImage(url);
+  // If a WebP variant is missing, fall back once to the original JPEG before giving up.
+  const handleError = () => (responsive.fallback && !useFallback ? setUseFallback(true) : setFailed(true));
+  const imgSrc = useFallback ? responsive.fallback : responsive.src;
+  const imgSrcSet = useFallback ? undefined : responsive.srcSet;
   const Icon = getCategoryIcon(`${kind || ''} ${alt || ''}`);
 
   return (
@@ -32,12 +39,15 @@ export default function ProductImage({
       {showImage ? (
         <Box
           component="img"
-          src={url}
+          src={imgSrc}
+          srcSet={imgSrcSet}
+          sizes={sizes}
           alt={alt}
           loading={eager ? 'eager' : 'lazy'}
+          fetchpriority={eager ? 'high' : undefined}
           decoding="async"
           onLoad={() => setLoaded(true)}
-          onError={() => setFailed(true)}
+          onError={handleError}
           sx={{
             position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: fit,
             p: fit === 'contain' ? '5%' : 0, opacity: loaded ? 1 : 0, transition: 'opacity 0.35s ease',

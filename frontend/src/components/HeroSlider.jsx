@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import { ZMark } from './BrandLogo';
 import { BRAND } from '../brand';
 import { goldGradient } from '../theme';
+import { realImage, responsiveImage } from '../utils/images';
 
 const AUTO_ADVANCE_MS = 6000;
 
@@ -19,8 +20,14 @@ const FALLBACK_SLIDES = [
  * photos are intentionally not shown; the storefront only displays real product photos.
  * A title written as "Headline — supporting line" is split into the two text levels.
  */
-export default function HeroSlider({ banners }) {
+export default function HeroSlider({ banners, products = [] }) {
   const slides = banners.length ? banners : FALLBACK_SLIDES;
+  // Up to three products with a real photo, shown as floating cards (desktop).
+  const featured = products
+    .map((p) => ({ ...p, img: realImage(p.image) }))
+    .filter((p) => p.img)
+    .filter((p, i, arr) => arr.findIndex((q) => q.img === p.img) === i)
+    .slice(0, 3);
   const [index, setIndex] = useState(0);
   const timerRef = useRef(null);
 
@@ -49,10 +56,53 @@ export default function HeroSlider({ banners }) {
         backgroundImage: 'radial-gradient(ellipse at 78% 40%, rgba(201,160,74,0.28) 0%, rgba(14,13,11,0) 55%), radial-gradient(ellipse at 10% 110%, rgba(201,160,74,0.12) 0%, rgba(14,13,11,0) 50%)',
       }}
     >
-      <ZMark
-        size={{ xs: 260, md: 460 }}
-        sx={{ position: 'absolute', right: { xs: -60, md: '6%' }, top: '50%', transform: 'translateY(-50%)', opacity: { xs: 0.12, md: 0.9 }, filter: 'drop-shadow(0 30px 60px rgba(0,0,0,0.5))', pointerEvents: 'none' }}
-      />
+      {/* Right-hand composition: gold Z with a travelling light sweep, plus floating product cards. */}
+      <Box sx={{ position: 'absolute', right: { xs: -60, md: '4%' }, top: '50%', transform: 'translateY(-50%)', width: { xs: 260, md: 520 }, height: { xs: 260, md: 460 }, pointerEvents: 'none' }}>
+        <Box sx={{ position: 'absolute', inset: 0, overflow: 'hidden', opacity: { xs: 0.14, md: featured.length ? 0.55 : 0.9 } }}>
+          <ZMark size="100%" sx={{ filter: 'drop-shadow(0 30px 60px rgba(0,0,0,0.5))' }} />
+          <Box
+            sx={{
+              position: 'absolute', top: '-20%', bottom: '-20%', width: '35%', left: '-40%',
+              background: 'linear-gradient(100deg, rgba(255,255,255,0) 0%, rgba(255,246,214,0.55) 50%, rgba(255,255,255,0) 100%)',
+              mixBlendMode: 'overlay', transform: 'skewX(-18deg)',
+              animation: 'zkSweep 5.5s ease-in-out infinite',
+              '@keyframes zkSweep': { '0%': { left: '-40%' }, '55%, 100%': { left: '120%' } },
+              '@media (prefers-reduced-motion: reduce)': { animation: 'none', display: 'none' },
+            }}
+          />
+        </Box>
+        {featured.map((p, i) => {
+          const pos = [
+            { top: '4%', left: '2%', w: '40%', rot: -6, delay: 0 },
+            { top: '20%', left: '50%', w: '44%', rot: 4, delay: 1.2 },
+            { top: '56%', left: '16%', w: '36%', rot: -2, delay: 2.4 },
+          ][i];
+          return (
+            <Box
+              key={p.id}
+              component={Link}
+              to={`/product/${p.slug}`}
+              sx={{
+                display: { xs: 'none', md: 'block' }, position: 'absolute', top: pos.top, left: pos.left, width: pos.w,
+                pointerEvents: 'auto', textDecoration: 'none', color: 'inherit',
+                '--rot': `${pos.rot}deg`,
+                animation: `zkFloat 7s ease-in-out ${pos.delay}s infinite`,
+                '@keyframes zkFloat': { '0%, 100%': { transform: 'translateY(0) rotate(var(--rot))' }, '50%': { transform: 'translateY(-14px) rotate(var(--rot))' } },
+                '@media (prefers-reduced-motion: reduce)': { animation: 'none', transform: 'rotate(var(--rot))' },
+                '&:hover .zk-card': { boxShadow: '0 30px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(243,217,139,0.7)' },
+              }}
+            >
+              <Box className="zk-card" sx={{ bgcolor: '#fff', p: 0.75, pb: 1.25, borderRadius: 2, boxShadow: '0 24px 50px rgba(0,0,0,0.5)', transition: 'box-shadow 0.3s ease' }}>
+                <Box component="img" src={responsiveImage(p.img).src} srcSet={responsiveImage(p.img).srcSet} sizes="240px" alt={p.name} decoding="async" sx={{ width: '100%', aspectRatio: '4 / 5', objectFit: 'cover', borderRadius: 1.5, display: 'block' }} />
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 1, mt: 1, px: 0.5 }}>
+                  <Typography noWrap sx={{ fontSize: '0.72rem', fontWeight: 600, color: 'text.primary' }}>{p.name}</Typography>
+                  <Typography sx={{ fontSize: '0.72rem', fontWeight: 700, color: 'secondary.dark', flexShrink: 0 }}>₹{Number(p.price).toLocaleString('en-IN')}</Typography>
+                </Box>
+              </Box>
+            </Box>
+          );
+        })}
+      </Box>
 
       <Container maxWidth="xl" sx={{ position: 'relative', minHeight: { xs: 380, md: 500 }, display: 'flex', alignItems: 'center', py: { xs: 7, md: 0 } }}>
         <Box sx={{ position: 'relative', width: '100%', maxWidth: 620, minHeight: { xs: 250, md: 280 } }}>

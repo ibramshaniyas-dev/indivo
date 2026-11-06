@@ -13,6 +13,25 @@ const API_ORIGIN = (() => {
   }
 })();
 
+/** Curated catalogue photo served by our own backend (uploads/catalog/<keyword>.jpg). */
+export function catalogImage(keyword, width) {
+  return width ? `${API_ORIGIN}/uploads/catalog/${keyword}-${width}.webp` : `${API_ORIGIN}/uploads/catalog/${keyword}.jpg`;
+}
+
+const CATALOG_RE = /\/uploads\/catalog\/([a-z0-9-]+)\.jpg$/i;
+
+/**
+ * For curated catalogue photos, returns a responsive WebP srcSet (480w / 960w) so each device
+ * downloads only the size it needs; other images are returned as-is.
+ */
+export function responsiveImage(url) {
+  if (!url) return { src: url };
+  const m = url.match(CATALOG_RE);
+  if (!m) return { src: url };
+  const base = url.slice(0, url.length - '.jpg'.length);
+  return { src: `${base}-960.webp`, srcSet: `${base}-480.webp 480w, ${base}-960.webp 960w`, fallback: url };
+}
+
 /**
  * Returns a loadable URL for a real product photo, or null if there is none.
  * Also repairs upload URLs that would otherwise break in the browser:

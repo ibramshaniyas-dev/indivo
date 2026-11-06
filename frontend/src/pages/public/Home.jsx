@@ -13,7 +13,11 @@ import ProductCardSkeleton from '../../components/ProductCardSkeleton';
 import HeroSlider from '../../components/HeroSlider';
 import RampSlide from '../../components/RampSlide';
 import HangingRail from '../../components/HangingRail';
-import CategoryIcon from '../../components/CategoryIcon';
+import CategoryShowcase from '../../components/CategoryShowcase';
+import Marquee from '../../components/Marquee';
+import Reveal from '../../components/Reveal';
+
+const TICKER = ['Pure Silk', 'Handloom Cotton', 'Royal Oud', 'Embroidered Juttis', 'Linen', 'Attar', 'Verified Sellers', 'Pan-India Delivery'];
 import { listProducts } from '../../services/product.service';
 import useWishlistToggle from '../../hooks/useWishlistToggle';
 import api from '../../services/api';
@@ -85,7 +89,7 @@ export default function Home() {
 
   return (
     <Box>
-      <HeroSlider banners={banners} />
+      <HeroSlider banners={banners} products={trending} />
 
       <Box sx={{ bgcolor: '#fff', borderBottom: '1px solid', borderColor: 'divider' }}>
         <Container maxWidth="xl">
@@ -105,46 +109,25 @@ export default function Home() {
         </Container>
       </Box>
 
-      <RampSlide products={trending} loading={loading} />
+      <Marquee items={TICKER} />
 
-      <Container maxWidth="xl" sx={{ py: { xs: 5, md: 8 } }}>
-        <SectionHeader eyebrow="Explore" title="Shop by Category" />
-        <Grid container spacing={{ xs: 1.5, md: 2 }}>
-          {(loading ? Array.from({ length: 6 }) : categories.slice(0, 12)).map((category, i) => (
-            <Grid item xs={4} sm={3} md={2} key={category?.id || i}>
-              {category ? (
-                <Box
-                  component={Link}
-                  to={`/search?category=${category.id}`}
-                  sx={{
-                    aspectRatio: '1 / 1', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                    gap: 1.25, bgcolor: '#fff', borderRadius: 3, textDecoration: 'none', color: 'text.primary', px: 1,
-                    border: '1px solid', borderColor: 'divider', transition: 'all 0.25s ease',
-                    '& .cat-icon': { transition: 'all 0.25s ease' },
-                    '&:hover': { borderColor: 'secondary.main', bgcolor: 'primary.main', color: '#fff', transform: 'translateY(-3px)' },
-                    '&:hover .cat-icon': { color: 'secondary.light', borderColor: 'rgba(243,217,139,0.5)' },
-                  }}
-                >
-                  <Box className="cat-icon" sx={{ width: { xs: 44, md: 56 }, height: { xs: 44, md: 56 }, borderRadius: '50%', border: '1px solid', borderColor: 'divider', display: 'grid', placeItems: 'center', color: 'secondary.dark' }}>
-                    <CategoryIcon name={category.name} sx={{ fontSize: { xs: 22, md: 26 } }} />
-                  </Box>
-                  <Typography variant="caption" sx={{ fontWeight: 600, textAlign: 'center', letterSpacing: '0.04em', lineHeight: 1.3 }}>
-                    {category.name}
-                  </Typography>
-                </Box>
-              ) : (
-                <Skeleton variant="rounded" sx={{ aspectRatio: '1 / 1', height: 'auto', borderRadius: 3 }} />
-              )}
-            </Grid>
-          ))}
-        </Grid>
+      <Reveal><RampSlide products={trending} loading={loading} /></Reveal>
 
+      <Container maxWidth="xl" sx={{ py: { xs: 5, md: 9 } }}>
+        <Reveal>
+          <SectionHeader eyebrow="Explore" title="Shop by Category" actionLabel="View All" actionHref="/search" />
+          {loading ? (
+            <Skeleton variant="rounded" sx={{ height: { xs: 760, md: 536 }, borderRadius: 3 }} />
+          ) : (
+            <CategoryShowcase categories={categories} />
+          )}
+        </Reveal>
       </Container>
 
-      <HangingRail tabs={RAIL_TABS} />
+      <Reveal><HangingRail tabs={RAIL_TABS} /></Reveal>
 
       <Box sx={{ bgcolor: 'primary.main', color: '#fff', py: { xs: 6, md: 8 }, textAlign: 'center' }}>
-        <Container maxWidth="md">
+        <Container maxWidth="md" component={Reveal}>
           <Typography variant="overline" sx={{ color: 'secondary.light', fontSize: '0.7rem' }}>Sell on {BRAND.name}</Typography>
           <Typography variant="h3" sx={{ fontSize: { xs: '1.8rem', md: '2.6rem' }, my: 1.5 }}>Bring your craft to customers across India</Typography>
           <Typography sx={{ opacity: 0.7, mb: 3.5, maxWidth: 520, mx: 'auto' }}>
@@ -154,7 +137,7 @@ export default function Home() {
         </Container>
       </Box>
 
-      <Container maxWidth="xl" sx={{ py: { xs: 5, md: 8 } }}>
+      <Container maxWidth="xl" sx={{ py: { xs: 5, md: 8 } }} component={Reveal}>
         <SectionHeader eyebrow="Customer Favourites" title="Best Rated" subtitle={`Highest-rated products on ${BRAND.name}`} actionLabel="View All" actionHref="/search?sort=rating" />
         <ProductGrid
           loading={loading} products={bestsellers} wishlistIds={wishlistIds} onToggleWishlist={toggle}
