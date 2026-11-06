@@ -11,11 +11,22 @@ import EmptyState from '../../components/EmptyState';
 import ProductCard from '../../components/ProductCard';
 import ProductCardSkeleton from '../../components/ProductCardSkeleton';
 import HeroSlider from '../../components/HeroSlider';
+import RampSlide from '../../components/RampSlide';
+import HangingRail from '../../components/HangingRail';
 import CategoryIcon from '../../components/CategoryIcon';
 import { listProducts } from '../../services/product.service';
 import useWishlistToggle from '../../hooks/useWishlistToggle';
 import api from '../../services/api';
 import { BRAND } from '../../brand';
+
+// Top-level category ids from /categories (the API filter includes subcategories).
+// Defined at module level so the rail doesn't refetch on every render.
+const RAIL_TABS = [
+  { label: 'Fashion', categoryId: 1 },
+  { label: 'Fabrics', categoryId: 2 },
+  { label: 'Accessories', categoryId: 5 },
+  { label: 'Footwear', categoryId: 6 },
+];
 
 const PROMISES = [
   { icon: VerifiedOutlinedIcon, title: 'Verified Sellers', text: 'Every seller is reviewed before listing' },
@@ -59,7 +70,7 @@ export default function Home() {
   useEffect(() => {
     Promise.all([
       api.get('/categories', { params: { parentId: 'null' } }),
-      listProducts({ sort: 'newest', limit: 8 }),
+      listProducts({ sort: 'newest', limit: 10 }),
       listProducts({ sort: 'rating', limit: 8 }),
       api.get('/cms/banners'),
     ])
@@ -94,9 +105,11 @@ export default function Home() {
         </Container>
       </Box>
 
+      <RampSlide products={trending} loading={loading} />
+
       <Container maxWidth="xl" sx={{ py: { xs: 5, md: 8 } }}>
         <SectionHeader eyebrow="Explore" title="Shop by Category" />
-        <Grid container spacing={{ xs: 1.5, md: 2 }} sx={{ mb: { xs: 6, md: 9 } }}>
+        <Grid container spacing={{ xs: 1.5, md: 2 }}>
           {(loading ? Array.from({ length: 6 }) : categories.slice(0, 12)).map((category, i) => (
             <Grid item xs={4} sm={3} md={2} key={category?.id || i}>
               {category ? (
@@ -126,14 +139,9 @@ export default function Home() {
           ))}
         </Grid>
 
-        <SectionHeader eyebrow="Just In" title="Trending Now" subtitle={`Fresh picks from across ${BRAND.name}`} actionLabel="View All" actionHref="/search?sort=newest" />
-        <Box sx={{ mb: { xs: 6, md: 9 } }}>
-          <ProductGrid
-            loading={loading} products={trending} wishlistIds={wishlistIds} onToggleWishlist={toggle}
-            emptyDescription="Sellers are onboarding now — trending products will appear here as soon as listings go live."
-          />
-        </Box>
       </Container>
+
+      <HangingRail tabs={RAIL_TABS} />
 
       <Box sx={{ bgcolor: 'primary.main', color: '#fff', py: { xs: 6, md: 8 }, textAlign: 'center' }}>
         <Container maxWidth="md">
