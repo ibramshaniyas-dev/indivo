@@ -82,7 +82,7 @@ export default function HangingRail({ tabs, eyebrow = 'New Collection', titleSta
       <Container maxWidth="xl">
         <Box sx={{ textAlign: 'center', mb: { xs: 3, md: 5 } }}>
           <Typography variant="overline" sx={{ color: 'text.secondary', fontSize: '0.64rem' }}>
-            {eyebrow} <Box component="span" sx={{ color: 'secondary.dark', mx: 1 }}>|</Box> Curated by ZARKIZ
+            {eyebrow} <Box component="span" sx={{ color: 'secondary.dark', mx: 1 }}>|</Box> Curated by SEESHAA
           </Typography>
           <Typography
             component="h2"

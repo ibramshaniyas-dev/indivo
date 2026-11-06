@@ -73,7 +73,7 @@ export default function SellerProducts() {
           <EmptyState
             icon={Inventory2RoundedIcon}
             title="No products yet"
-            description="Add your first product to start selling on ZARKIZ."
+            description="Add your first product to start selling on SEESHAA."
             actionLabel="Add Product"
             onAction={() => navigate('/seller/products/new')}
           />

@@ -1,6 +1,6 @@
 import { createTheme } from '@mui/material/styles';
 
-// ZARKIZ design tokens, sampled from the brand logo: polished gold monogram on a warm champagne
+// SEESHAA design tokens, sampled from the brand logo: polished gold monogram on a warm champagne
 // ground. Pure black is reserved for the logo wordmark; UI accents use a deep bronze that keeps
 // strong contrast on white (≈6.7:1) without the heaviness of black. Headings use Jost.
 export const ink = '#0E0D0B'; // logo wordmark only

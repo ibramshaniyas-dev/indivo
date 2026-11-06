@@ -3,7 +3,7 @@ import { Box, Container, Typography, Button, IconButton } from '@mui/material';
 import ArrowBackIosNewRoundedIcon from '@mui/icons-material/ArrowBackIosNewRounded';
 import ArrowForwardIosRoundedIcon from '@mui/icons-material/ArrowForwardIosRounded';
 import { Link } from 'react-router-dom';
-import { ZMark } from './BrandLogo';
+import { BrandMark } from './BrandLogo';
 import { BRAND } from '../brand';
 import { goldGradient } from '../theme';
 import { realImage, responsiveImage } from '../utils/images';
@@ -59,7 +59,7 @@ export default function HeroSlider({ banners, products = [] }) {
       {/* Right-hand composition: gold Z with a travelling light sweep, plus floating product cards. */}
       <Box sx={{ position: 'absolute', right: { xs: -60, md: '4%' }, top: '50%', transform: 'translateY(-50%)', width: { xs: 260, md: 520 }, height: { xs: 260, md: 460 }, pointerEvents: 'none' }}>
         <Box sx={{ position: 'absolute', inset: 0, overflow: 'hidden', opacity: { xs: 0.22, md: featured.length ? 0.7 : 1 } }}>
-          <ZMark size="100%" sx={{ filter: 'drop-shadow(0 24px 40px rgba(122,85,23,0.25))' }} />
+          <BrandMark size="100%" sx={{ filter: 'drop-shadow(0 24px 40px rgba(122,85,23,0.25))' }} />
           <Box
             sx={{
               position: 'absolute', top: '-20%', bottom: '-20%', width: '35%', left: '-40%',

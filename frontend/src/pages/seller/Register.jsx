@@ -43,7 +43,7 @@ export default function SellerRegister() {
   return (
     <Box sx={{ maxWidth: 560, mx: 'auto', mt: 6 }}>
       <Paper sx={{ p: 4 }}>
-        <Typography variant="h5" gutterBottom>Sell on ZARKIZ</Typography>
+        <Typography variant="h5" gutterBottom>Sell on SEESHAA</Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
           Create your seller account, then complete onboarding to get approved.
         </Typography>

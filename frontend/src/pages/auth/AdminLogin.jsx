@@ -6,7 +6,7 @@ export default function AdminLogin() {
     <Box sx={{ bgcolor: 'background.default', minHeight: '100vh', py: 2 }}>
       <PortalLoginForm
         title="Admin Login"
-        subtitle="ZARKIZ Administration"
+        subtitle="SEESHAA Administration"
         portalLabel="Admin Portal"
         identifierLabel="Email"
         isAllowed={(user) => user.userType === 'ADMIN'}

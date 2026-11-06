@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setUser } from '../store/slices/authSlice';
 import { login, persistSession } from '../services/auth.service';
-import BrandLogo, { ZMark } from './BrandLogo';
+import BrandLogo, { BrandMark } from './BrandLogo';
 import { BRAND } from '../brand';
 import { goldGradient, champagne } from '../theme';
 
@@ -57,11 +57,11 @@ export default function PortalLoginForm({
           }}
         >
           <BrandLogo showTagline to="/" />
-          <ZMark size={260} sx={{ position: 'absolute', right: -40, bottom: 40, opacity: 0.9, filter: 'drop-shadow(0 20px 36px rgba(122,85,23,0.25))' }} />
+          <BrandMark size={210} sx={{ position: 'absolute', right: -56, top: '22%', opacity: 0.9, filter: 'drop-shadow(0 20px 36px rgba(122,85,23,0.25))' }} />
           <Box sx={{ position: 'relative' }}>
             {portalLabel && <Typography variant="overline" sx={{ color: 'primary.main', fontSize: '0.66rem' }}>{portalLabel}</Typography>}
             <Box sx={{ width: 44, height: 2, backgroundImage: goldGradient, my: 1.5 }} />
-            <Typography variant="body2" sx={{ color: 'text.secondary', maxWidth: 260 }}>{BRAND.description}</Typography>
+            <Typography variant="body2" sx={{ color: 'text.secondary', maxWidth: 230, position: 'relative', zIndex: 1 }}>{BRAND.description}</Typography>
           </Box>
         </Box>
 

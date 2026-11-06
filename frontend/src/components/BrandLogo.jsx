@@ -3,8 +3,11 @@ import { Box, Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { BRAND } from '../brand';
 
-/** The ZARKIZ "Z" monogram: two gold bars joined by a gently twisted ribbon, as in the logo. */
-export function ZMark({ size = 40, sx }) {
+/**
+ * The SEESHAA "S" monogram: two polished-gold bars with rounded outer ends, joined by a gently
+ * twisted ribbon — a geometric S in the same gold-ribbon style as the brand artwork.
+ */
+export function BrandMark({ size = 40, sx }) {
   const id = useId().replace(/:/g, '');
   return (
     <Box component="svg" viewBox="0 0 100 100" role="img" aria-label={BRAND.name} sx={{ width: size, height: size, flexShrink: 0, display: 'block', ...sx }}>
@@ -21,9 +24,9 @@ export function ZMark({ size = 40, sx }) {
           <stop offset="1" stopColor="#8A6220" />
         </linearGradient>
       </defs>
-      <path d="M8 10 H92 L84 24 H20 Z" fill={`url(#${id}-bar)`} />
-      <path d="M70 24 H88 C68 42 46 60 30 76 H12 C30 58 52 40 70 24 Z" fill={`url(#${id}-ribbon)`} />
-      <path d="M12 76 H80 L92 90 H8 Z" fill={`url(#${id}-bar)`} />
+      <path d="M92 10 H42 C22 10 10 21 10 38 H32 C32 31 37 26 46 26 H80 Z" fill={`url(#${id}-bar)`} />
+      <path d="M10 38 H32 C52 44 72 52 90 62 H68 C50 56 28 48 10 38 Z" fill={`url(#${id}-ribbon)`} />
+      <path d="M8 90 H58 C78 90 90 79 90 62 H68 C68 69 63 74 54 74 H20 Z" fill={`url(#${id}-bar)`} />
     </Box>
   );
 }
@@ -36,7 +39,7 @@ export default function BrandLogo({ size = 'medium', tone = 'dark', showTagline 
   const dims = { small: { mark: 28, text: '1.15rem' }, medium: { mark: 36, text: '1.5rem' }, large: { mark: 64, text: '2.4rem' } }[size];
   const content = (
     <>
-      <ZMark size={dims.mark} />
+      <BrandMark size={dims.mark} />
       <Box sx={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
         <Typography
           component="span"

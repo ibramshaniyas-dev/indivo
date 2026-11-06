@@ -1,5 +1,5 @@
 import { Box, Typography } from '@mui/material';
-import { ZMark } from './BrandLogo';
+import { BrandMark } from './BrandLogo';
 
 /** Endless gold-on-black ticker. Content is duplicated so the loop is seamless. */
 export default function Marquee({ items, speed = 38 }) {
@@ -10,7 +10,7 @@ export default function Marquee({ items, speed = 38 }) {
           <Typography component="span" sx={{ fontFamily: "'Jost', sans-serif", fontSize: { xs: '0.95rem', md: '1.15rem' }, letterSpacing: '0.24em', textTransform: 'uppercase', color: '#4A3310', whiteSpace: 'nowrap', px: { xs: 2.5, md: 4 } }}>
             {t}
           </Typography>
-          <ZMark size={16} sx={{ opacity: 0.9 }} />
+          <BrandMark size={16} sx={{ opacity: 0.9 }} />
         </Box>
       ))}
     </Box>

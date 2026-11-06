@@ -6,7 +6,7 @@ export default function SellerLogin() {
   return (
     <PortalLoginForm
       title="Seller Login"
-      subtitle="Manage your ZARKIZ store"
+      subtitle="Manage your SEESHAA store"
       portalLabel="Seller Hub"
       identifierLabel="Mobile Number or Email"
       isAllowed={(user) => user.userType === 'SELLER_STAFF'}

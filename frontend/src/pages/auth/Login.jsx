@@ -6,7 +6,7 @@ export default function Login() {
   return (
     <PortalLoginForm
       title="Welcome back"
-      subtitle="Sign in to your ZARKIZ account"
+      subtitle="Sign in to your SEESHAA account"
       portalLabel="Customer Sign In"
       identifierLabel="Mobile Number"
       isAllowed={(user) => user.userType === 'CUSTOMER'}
@@ -15,7 +15,7 @@ export default function Login() {
       footer={
         <Box>
           <Typography variant="body2">
-            New to ZARKIZ? <Link to="/register">Create an account</Link>
+            New to SEESHAA? <Link to="/register">Create an account</Link>
           </Typography>
           <Typography variant="body2" sx={{ mt: 1 }}>
             <Link to="/seller/login">Seller login</Link>
