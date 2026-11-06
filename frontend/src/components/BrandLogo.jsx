@@ -42,7 +42,7 @@ export default function BrandLogo({ size = 'medium', tone = 'dark', showTagline 
           component="span"
           sx={{
             fontFamily: "'Jost', sans-serif", fontWeight: 600, fontSize: dims.text, letterSpacing: '0.14em',
-            lineHeight: 1, color: tone === 'light' ? '#FFFFFF' : 'primary.main',
+            lineHeight: 1, color: tone === 'light' ? '#FFFFFF' : '#0E0D0B',
           }}
         >
           {BRAND.name}

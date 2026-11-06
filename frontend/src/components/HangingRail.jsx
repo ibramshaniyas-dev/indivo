@@ -105,8 +105,8 @@ export default function HangingRail({ tabs, eyebrow = 'New Collection', titleSta
                 sx={{
                   border: 0, cursor: 'pointer', borderRadius: 999, px: { xs: 1.75, md: 2.5 }, py: 0.9, flexShrink: 0,
                   font: 'inherit', fontSize: '0.8rem', fontWeight: 600, letterSpacing: '0.04em',
-                  bgcolor: i === active ? 'primary.main' : 'transparent', color: i === active ? 'secondary.light' : 'text.secondary',
-                  transition: 'all 0.2s ease', '&:hover': { color: i === active ? 'secondary.light' : 'text.primary' },
+                  bgcolor: i === active ? 'primary.main' : 'transparent', color: i === active ? '#fff' : 'text.secondary',
+                  transition: 'all 0.2s ease', '&:hover': { color: i === active ? '#fff' : 'primary.main' },
                 }}
               >
                 {t.label}

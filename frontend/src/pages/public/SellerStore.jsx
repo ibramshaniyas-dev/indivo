@@ -43,18 +43,18 @@ export default function SellerStore() {
 
   return (
     <Box>
-      <Box sx={{ background: 'linear-gradient(135deg, #161513 0%, #332F28 100%)', color: '#fff', py: 5 }}>
+      <Box sx={{ background: 'linear-gradient(135deg, #FDF8EC 0%, #F5E6BF 55%, #EED69B 100%)', color: 'text.primary', py: 5, borderBottom: '1px solid rgba(154,114,40,0.2)' }}>
         <Container maxWidth="xl">
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Box sx={{ width: 72, height: 72, borderRadius: '50%', bgcolor: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <StorefrontRoundedIcon sx={{ fontSize: 32 }} />
+            <Box sx={{ width: 72, height: 72, borderRadius: '50%', bgcolor: '#fff', border: '1px solid rgba(154,114,40,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <StorefrontRoundedIcon sx={{ fontSize: 32, color: 'primary.main' }} />
             </Box>
             <Box>
               <Typography variant="h4">{seller.display_name}</Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 0.5 }}>
-                {seller.business_category && <Chip size="small" label={seller.business_category} sx={{ bgcolor: 'rgba(255,255,255,0.12)', color: '#fff' }} />}
+                {seller.business_category && <Chip size="small" label={seller.business_category} sx={{ bgcolor: '#fff', color: 'primary.main', border: '1px solid rgba(154,114,40,0.3)' }} />}
                 {seller.city && (
-                  <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, opacity: 0.85 }}>
+                  <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
                     <PlaceRoundedIcon fontSize="small" /> {seller.city}, {seller.state}
                   </Typography>
                 )}

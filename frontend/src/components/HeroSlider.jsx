@@ -45,21 +45,21 @@ export default function HeroSlider({ banners, products = [] }) {
   };
 
   const navBtnSx = {
-    border: '1px solid rgba(243,217,139,0.35)', color: 'secondary.light',
-    '&:hover': { bgcolor: 'rgba(243,217,139,0.12)' },
+    border: '1px solid rgba(122,85,23,0.35)', color: 'primary.main', bgcolor: 'rgba(255,255,255,0.6)',
+    '&:hover': { bgcolor: '#fff' },
   };
 
   return (
     <Box
       sx={{
-        position: 'relative', overflow: 'hidden', color: '#fff', bgcolor: 'primary.main',
-        backgroundImage: 'radial-gradient(ellipse at 78% 40%, rgba(201,160,74,0.28) 0%, rgba(14,13,11,0) 55%), radial-gradient(ellipse at 10% 110%, rgba(201,160,74,0.12) 0%, rgba(14,13,11,0) 50%)',
+        position: 'relative', overflow: 'hidden', color: 'text.primary', bgcolor: '#FBF3DE',
+        backgroundImage: 'radial-gradient(ellipse at 78% 45%, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0) 50%), radial-gradient(ellipse at 0% 100%, rgba(233,196,106,0.35) 0%, rgba(233,196,106,0) 55%), linear-gradient(135deg, #FDF8EC 0%, #F5E6BF 55%, #EED69B 100%)',
       }}
     >
       {/* Right-hand composition: gold Z with a travelling light sweep, plus floating product cards. */}
       <Box sx={{ position: 'absolute', right: { xs: -60, md: '4%' }, top: '50%', transform: 'translateY(-50%)', width: { xs: 260, md: 520 }, height: { xs: 260, md: 460 }, pointerEvents: 'none' }}>
-        <Box sx={{ position: 'absolute', inset: 0, overflow: 'hidden', opacity: { xs: 0.14, md: featured.length ? 0.55 : 0.9 } }}>
-          <ZMark size="100%" sx={{ filter: 'drop-shadow(0 30px 60px rgba(0,0,0,0.5))' }} />
+        <Box sx={{ position: 'absolute', inset: 0, overflow: 'hidden', opacity: { xs: 0.22, md: featured.length ? 0.7 : 1 } }}>
+          <ZMark size="100%" sx={{ filter: 'drop-shadow(0 24px 40px rgba(122,85,23,0.25))' }} />
           <Box
             sx={{
               position: 'absolute', top: '-20%', bottom: '-20%', width: '35%', left: '-40%',
@@ -89,10 +89,10 @@ export default function HeroSlider({ banners, products = [] }) {
                 animation: `zkFloat 7s ease-in-out ${pos.delay}s infinite`,
                 '@keyframes zkFloat': { '0%, 100%': { transform: 'translateY(0) rotate(var(--rot))' }, '50%': { transform: 'translateY(-14px) rotate(var(--rot))' } },
                 '@media (prefers-reduced-motion: reduce)': { animation: 'none', transform: 'rotate(var(--rot))' },
-                '&:hover .zk-card': { boxShadow: '0 30px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(243,217,139,0.7)' },
+                '&:hover .zk-card': { boxShadow: '0 30px 60px rgba(122,85,23,0.35), 0 0 0 1px rgba(201,160,74,0.8)' },
               }}
             >
-              <Box className="zk-card" sx={{ bgcolor: '#fff', p: 0.75, pb: 1.25, borderRadius: 2, boxShadow: '0 24px 50px rgba(0,0,0,0.5)', transition: 'box-shadow 0.3s ease' }}>
+              <Box className="zk-card" sx={{ bgcolor: '#fff', p: 0.75, pb: 1.25, borderRadius: 2, boxShadow: '0 22px 44px rgba(122,85,23,0.22)', transition: 'box-shadow 0.3s ease' }}>
                 <Box component="img" src={responsiveImage(p.img).src} srcSet={responsiveImage(p.img).srcSet} sizes="240px" alt={p.name} decoding="async" sx={{ width: '100%', aspectRatio: '4 / 5', objectFit: 'cover', borderRadius: 1.5, display: 'block' }} />
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 1, mt: 1, px: 0.5 }}>
                   <Typography noWrap sx={{ fontSize: '0.72rem', fontWeight: 600, color: 'text.primary' }}>{p.name}</Typography>
@@ -120,13 +120,13 @@ export default function HeroSlider({ banners, products = [] }) {
                   visibility: active ? 'visible' : 'hidden',
                 }}
               >
-                <Typography variant="overline" sx={{ color: 'secondary.light', fontSize: '0.7rem' }}>{BRAND.tagline}</Typography>
+                <Typography variant="overline" sx={{ color: 'primary.main', fontSize: '0.7rem' }}>{BRAND.tagline}</Typography>
                 <Box sx={{ width: 56, height: 2, backgroundImage: goldGradient, my: 2 }} />
                 <Typography variant="h2" component="h1" sx={{ fontSize: { xs: '2.1rem', md: '3.4rem' }, lineHeight: 1.1, mb: 2 }}>
                   {headline}
                 </Typography>
                 {supporting && (
-                  <Typography sx={{ opacity: 0.75, fontSize: { xs: '0.95rem', md: '1.1rem' }, maxWidth: 480, mb: 4 }}>{supporting}</Typography>
+                  <Typography sx={{ color: 'text.secondary', fontSize: { xs: '0.95rem', md: '1.1rem' }, maxWidth: 480, mb: 4 }}>{supporting}</Typography>
                 )}
                 <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', mt: supporting ? 0 : 3 }}>
                   <Button component={Link} to={s.link || '/search'} variant="contained" color="secondary" size="large" tabIndex={active ? 0 : -1}>
@@ -134,7 +134,7 @@ export default function HeroSlider({ banners, products = [] }) {
                   </Button>
                   <Button
                     component={Link} to="/search?sort=newest" variant="outlined" size="large" tabIndex={active ? 0 : -1}
-                    sx={{ color: '#fff', borderColor: 'rgba(255,255,255,0.35)', '&:hover': { borderColor: 'secondary.light', bgcolor: 'rgba(255,255,255,0.04)' } }}
+                    sx={{ color: 'primary.main', borderColor: 'rgba(122,85,23,0.45)', bgcolor: 'rgba(255,255,255,0.55)', '&:hover': { borderColor: 'primary.main', bgcolor: '#fff' } }}
                   >
                     New Arrivals
                   </Button>
@@ -159,7 +159,7 @@ export default function HeroSlider({ banners, products = [] }) {
                 onClick={() => goTo(i)}
                 sx={{
                   width: i === index ? 28 : 10, height: 3, border: 0, p: 0, cursor: 'pointer', borderRadius: 2,
-                  bgcolor: i === index ? 'secondary.main' : 'rgba(255,255,255,0.3)', transition: 'width 0.3s ease',
+                  bgcolor: i === index ? 'primary.main' : 'rgba(122,85,23,0.25)', transition: 'width 0.3s ease',
                 }}
               />
             ))}

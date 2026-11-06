@@ -40,17 +40,17 @@ export default function AdminLayout() {
   const sidebarContent = (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <Toolbar sx={{ px: 2, py: 2, flexDirection: 'column', alignItems: 'flex-start', gap: 0.75 }}>
-        <BrandLogo size="small" tone="light" to={basePath === '/super-admin' ? '/super-admin/dashboard' : '/admin/dashboard'} />
-        <Typography variant="overline" sx={{ color: 'secondary.light', fontSize: '0.6rem', lineHeight: 1 }}>
+        <BrandLogo size="small" to={basePath === '/super-admin' ? '/super-admin/dashboard' : '/admin/dashboard'} />
+        <Typography variant="overline" sx={{ color: 'primary.main', fontSize: '0.6rem', lineHeight: 1 }}>
           {isSuperAdminPortal ? 'Control Center' : 'Admin Portal'}
         </Typography>
       </Toolbar>
-      <Divider sx={{ borderColor: 'rgba(255,255,255,0.12)' }} />
+      <Divider />
       <Box sx={{ flexGrow: 1, overflowY: 'auto', py: 1 }}>
         {visibleSections.map((group) => (
           <Box key={group.section || 'root'} sx={{ mb: 1 }}>
             {group.section && (
-              <Typography variant="caption" sx={{ px: 2, py: 1, display: 'block', color: 'rgba(255,255,255,0.5)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+              <Typography variant="caption" sx={{ px: 2, py: 1, display: 'block', color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>
                 {group.section}
               </Typography>
             )}
@@ -65,9 +65,9 @@ export default function AdminLayout() {
                     to={fullPath}
                     selected={active}
                     sx={{
-                      mx: 1, borderRadius: 2, color: 'rgba(255,255,255,0.85)',
-                      '&.Mui-selected': { bgcolor: 'rgba(201,160,74,0.16)', color: 'secondary.light', boxShadow: 'inset 2px 0 0 #C9A04A' },
-                      '&:hover': { bgcolor: 'rgba(255,255,255,0.06)' },
+                      mx: 1, borderRadius: 2, color: 'text.primary',
+                      '&.Mui-selected': { bgcolor: 'rgba(201,160,74,0.16)', color: 'primary.main', boxShadow: 'inset 3px 0 0 #7A5517' }, '&.Mui-selected:hover': { bgcolor: 'rgba(201,160,74,0.22)' },
+                      '&:hover': { bgcolor: 'rgba(201,160,74,0.10)' },
                     }}
                   >
                     <ListItemIcon sx={{ color: 'inherit', minWidth: 36 }}>
@@ -94,14 +94,14 @@ export default function AdminLayout() {
           open={mobileOpen}
           onClose={() => setMobileOpen(false)}
           ModalProps={{ keepMounted: true }}
-          sx={{ display: { xs: 'block', md: 'none' }, '& .MuiDrawer-paper': { width: DRAWER_WIDTH, bgcolor: 'primary.main' } }}
+          sx={{ display: { xs: 'block', md: 'none' }, '& .MuiDrawer-paper': { width: DRAWER_WIDTH, bgcolor: '#FFFCF4' } }}
         >
           {sidebarContent}
         </Drawer>
         <Drawer
           variant="permanent"
           open
-          sx={{ display: { xs: 'none', md: 'block' }, '& .MuiDrawer-paper': { width: DRAWER_WIDTH, bgcolor: 'primary.main', border: 'none' } }}
+          sx={{ display: { xs: 'none', md: 'block' }, '& .MuiDrawer-paper': { width: DRAWER_WIDTH, bgcolor: '#FFFCF4', borderRight: '1px solid #E9DFC9' } }}
         >
           {sidebarContent}
         </Drawer>

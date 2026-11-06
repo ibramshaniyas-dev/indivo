@@ -36,6 +36,16 @@ export default function ProductImage({
         bgcolor: '#FFFFFF', backgroundImage: 'linear-gradient(180deg, #FFFFFF 0%, #F6F1E5 100%)', ...sx,
       }}
     >
+      {showImage && responsive.placeholder && !loaded && (
+        <Box
+          aria-hidden
+          sx={{
+            position: 'absolute', inset: '-6%', backgroundImage: `url(${responsive.placeholder})`,
+            backgroundSize: fit === 'cover' ? 'cover' : 'contain', backgroundPosition: 'center', backgroundRepeat: 'no-repeat',
+            filter: 'blur(14px) saturate(1.1)', transform: 'scale(1.04)',
+          }}
+        />
+      )}
       {showImage ? (
         <Box
           component="img"
@@ -50,7 +60,7 @@ export default function ProductImage({
           onError={handleError}
           sx={{
             position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: fit,
-            p: fit === 'contain' ? '5%' : 0, opacity: loaded ? 1 : 0, transition: 'opacity 0.35s ease',
+            p: fit === 'contain' ? '5%' : 0, opacity: loaded ? 1 : 0, transition: 'opacity 0.25s ease',
             ...imgSx,
           }}
         />

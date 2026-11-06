@@ -29,7 +29,12 @@ export function responsiveImage(url) {
   const m = url.match(CATALOG_RE);
   if (!m) return { src: url };
   const base = url.slice(0, url.length - '.jpg'.length);
-  return { src: `${base}-960.webp`, srcSet: `${base}-480.webp 480w, ${base}-960.webp 960w`, fallback: url };
+  return {
+    src: `${base}-960.webp`,
+    srcSet: `${base}-480.webp 480w, ${base}-960.webp 960w`,
+    fallback: url,
+    placeholder: `${base}-32.webp`, // ~250-byte preview shown blurred while the real image loads
+  };
 }
 
 /**

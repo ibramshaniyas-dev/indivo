@@ -51,20 +51,20 @@ export default function CategoryShowcase({ categories }) {
             to={`/search?category=${c.id}`}
             sx={{
               gridArea: AREAS[i], position: 'relative', overflow: 'hidden', borderRadius: 3, textDecoration: 'none', color: '#fff',
-              bgcolor: 'primary.main', isolation: 'isolate',
+              bgcolor: '#EAD7A8', isolation: 'isolate',
               '& .zk-photo': { transition: 'transform 1.2s cubic-bezier(.22,.8,.24,1)' },
               '&:hover .zk-photo': { transform: 'scale(1.07)' },
               '& .zk-arrow': { transition: 'all 0.35s ease' },
-              '&:hover .zk-arrow': { bgcolor: 'secondary.main', color: 'primary.main', transform: 'rotate(45deg)' },
+              '&:hover .zk-arrow': { bgcolor: '#fff', color: 'primary.main', transform: 'rotate(45deg)' },
             }}
           >
             {img && (
               <Box className="zk-photo" component="img" src={img} srcSet={srcSet} sizes={i === 0 ? '(max-width: 900px) 100vw, 40vw' : '(max-width: 900px) 50vw, 25vw'} alt="" loading="lazy" decoding="async" sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: -2 }} />
             )}
-            <Box sx={{ position: 'absolute', inset: 0, zIndex: -1, background: 'linear-gradient(180deg, rgba(14,13,11,0) 35%, rgba(14,13,11,0.82) 100%)' }} />
+            <Box sx={{ position: 'absolute', inset: 0, zIndex: -1, background: 'linear-gradient(180deg, rgba(60,40,10,0) 40%, rgba(60,40,10,0.78) 100%)' }} />
             <Box sx={{ position: 'absolute', left: { xs: 14, md: 22 }, right: { xs: 14, md: 22 }, bottom: { xs: 14, md: 20 }, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 1 }}>
               <Box>
-                <Typography sx={{ fontSize: '0.6rem', letterSpacing: '0.24em', textTransform: 'uppercase', color: 'secondary.light', fontWeight: 600, display: { xs: i === 0 ? 'block' : 'none', md: 'block' } }}>
+                <Typography sx={{ fontSize: '0.6rem', letterSpacing: '0.24em', textTransform: 'uppercase', color: '#FBE7A6', fontWeight: 600, display: { xs: i === 0 ? 'block' : 'none', md: 'block' } }}>
                   {tagline}
                 </Typography>
                 <Typography sx={{ fontFamily: headingFont, fontSize: { xs: i === 0 ? '1.6rem' : '1.05rem', md: i === 0 ? '2.4rem' : '1.4rem' }, lineHeight: 1.1, mt: 0.5 }}>

@@ -7,7 +7,7 @@ export default function Marquee({ items, speed = 38 }) {
     <Box aria-hidden={hidden || undefined} sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
       {items.map((t) => (
         <Box key={t} sx={{ display: 'flex', alignItems: 'center' }}>
-          <Typography component="span" sx={{ fontFamily: "'Jost', sans-serif", fontSize: { xs: '0.95rem', md: '1.15rem' }, letterSpacing: '0.24em', textTransform: 'uppercase', color: 'secondary.light', whiteSpace: 'nowrap', px: { xs: 2.5, md: 4 } }}>
+          <Typography component="span" sx={{ fontFamily: "'Jost', sans-serif", fontSize: { xs: '0.95rem', md: '1.15rem' }, letterSpacing: '0.24em', textTransform: 'uppercase', color: '#4A3310', whiteSpace: 'nowrap', px: { xs: 2.5, md: 4 } }}>
             {t}
           </Typography>
           <ZMark size={16} sx={{ opacity: 0.9 }} />
@@ -17,7 +17,7 @@ export default function Marquee({ items, speed = 38 }) {
   );
 
   return (
-    <Box sx={{ bgcolor: 'primary.main', py: { xs: 1.6, md: 2 }, overflow: 'hidden', borderTop: '1px solid rgba(243,217,139,0.18)', borderBottom: '1px solid rgba(243,217,139,0.18)' }}>
+    <Box sx={{ background: 'linear-gradient(90deg, #E9C46A 0%, #F7E3A1 50%, #E2BA5C 100%)', py: { xs: 1.6, md: 2 }, overflow: 'hidden', borderTop: '1px solid rgba(122,85,23,0.2)', borderBottom: '1px solid rgba(122,85,23,0.2)' }}>
       <Box
         sx={{
           display: 'flex', width: 'max-content',

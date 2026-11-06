@@ -22,6 +22,7 @@ import { listProducts } from '../../services/product.service';
 import useWishlistToggle from '../../hooks/useWishlistToggle';
 import api from '../../services/api';
 import { BRAND } from '../../brand';
+import { champagne } from '../../theme';
 
 // Top-level category ids from /categories (the API filter includes subcategories).
 // Defined at module level so the rail doesn't refetch on every render.
@@ -126,14 +127,14 @@ export default function Home() {
 
       <Reveal><HangingRail tabs={RAIL_TABS} /></Reveal>
 
-      <Box sx={{ bgcolor: 'primary.main', color: '#fff', py: { xs: 6, md: 8 }, textAlign: 'center' }}>
+      <Box sx={{ background: champagne, color: 'text.primary', py: { xs: 6, md: 8 }, textAlign: 'center', borderTop: '1px solid', borderBottom: '1px solid', borderColor: 'rgba(154,114,40,0.2)' }}>
         <Container maxWidth="md" component={Reveal}>
-          <Typography variant="overline" sx={{ color: 'secondary.light', fontSize: '0.7rem' }}>Sell on {BRAND.name}</Typography>
+          <Typography variant="overline" sx={{ color: 'primary.main', fontSize: '0.7rem' }}>Sell on {BRAND.name}</Typography>
           <Typography variant="h3" sx={{ fontSize: { xs: '1.8rem', md: '2.6rem' }, my: 1.5 }}>Bring your craft to customers across India</Typography>
-          <Typography sx={{ opacity: 0.7, mb: 3.5, maxWidth: 520, mx: 'auto' }}>
+          <Typography sx={{ color: 'text.secondary', mb: 3.5, maxWidth: 520, mx: 'auto' }}>
             List your products, manage orders and ship with integrated tracking — all from one seller dashboard.
           </Typography>
-          <Button component={Link} to="/sell" variant="contained" color="secondary" size="large">Become a Seller</Button>
+          <Button component={Link} to="/sell" variant="contained" size="large">Become a Seller</Button>
         </Container>
       </Box>
 

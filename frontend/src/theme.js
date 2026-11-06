@@ -1,9 +1,13 @@
 import { createTheme } from '@mui/material/styles';
 
-// ZARKIZ design tokens, sampled from the brand logo: true black type, polished gold monogram,
-// warm champagne/cream ground. Headings use Jost (geometric, close to the logo wordmark).
+// ZARKIZ design tokens, sampled from the brand logo: polished gold monogram on a warm champagne
+// ground. Pure black is reserved for the logo wordmark; UI accents use a deep bronze that keeps
+// strong contrast on white (≈6.7:1) without the heaviness of black. Headings use Jost.
+export const ink = '#0E0D0B'; // logo wordmark only
+export const champagne = 'linear-gradient(135deg, #FDF8EC 0%, #F6E9C6 50%, #EFD9A0 100%)';
+export const champagneSoft = 'linear-gradient(180deg, #FFFCF4 0%, #F8EFD8 100%)';
 const colors = {
-  navy: { main: '#0E0D0B', light: '#2A2620', dark: '#000000', contrastText: '#FFFFFF' },
+  navy: { main: '#7A5517', light: '#946A24', dark: '#5C3F10', contrastText: '#FFFFFF' },
   gold: { main: '#C9A04A', light: '#F3D98B', dark: '#9A7228', contrastText: '#0E0D0B' },
   success: { main: '#1E8E62', light: '#E3F4EC' },
   error: { main: '#D6453D', light: '#FBE9E7' },
@@ -69,7 +73,7 @@ const theme = createTheme({
         sizeLarge: { paddingInline: 28, paddingBlock: 13, fontSize: '0.95rem' },
         containedPrimary: { '&:hover': { backgroundColor: colors.navy.light } },
         containedSecondary: {
-          color: colors.navy.main,
+          color: '#2B1F08',
           backgroundImage: goldGradient,
           backgroundSize: '200% 100%',
           backgroundPosition: '0% 0',

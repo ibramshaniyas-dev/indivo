@@ -17,7 +17,7 @@ import { getCart } from '../services/cart.service';
 import { getWishlist } from '../services/wishlist.service';
 import BrandLogo from '../components/BrandLogo';
 import { BRAND } from '../brand';
-import { goldGradient } from '../theme';
+import { goldGradient, champagne, champagneSoft } from '../theme';
 import api from '../services/api';
 
 const FOOTER_COLUMNS = [
@@ -56,7 +56,7 @@ export default function CustomerLayout() {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <Box sx={{ bgcolor: 'primary.main', color: 'secondary.light', py: 0.75, textAlign: 'center' }}>
+      <Box sx={{ background: champagne, color: '#5C3F10', py: 0.75, textAlign: 'center', borderBottom: '1px solid rgba(154,114,40,0.18)' }}>
         <Typography variant="overline" sx={{ fontSize: '0.62rem' }}>
           {BRAND.tagline}
         </Typography>
@@ -114,7 +114,7 @@ export default function CustomerLayout() {
                 inputProps={{ 'aria-label': 'Search products' }}
                 sx={{ fontSize: '0.9rem' }}
               />
-              <IconButton type="submit" aria-label="Search" size="small" sx={{ bgcolor: 'primary.main', color: 'secondary.light', '&:hover': { bgcolor: 'primary.light' } }}>
+              <IconButton type="submit" aria-label="Search" size="small" sx={{ bgcolor: 'primary.main', color: '#fff', '&:hover': { bgcolor: 'primary.light' } }}>
                 <SearchRoundedIcon fontSize="small" />
               </IconButton>
             </Paper>
@@ -140,22 +140,22 @@ export default function CustomerLayout() {
         <Outlet />
       </Box>
 
-      <Box component="footer" sx={{ bgcolor: 'primary.main', color: 'rgba(255,255,255,0.72)', mt: 8, pb: { xs: 10, md: 4 } }}>
+      <Box component="footer" sx={{ background: champagneSoft, color: 'text.secondary', mt: 8, pb: { xs: 10, md: 4 }, borderTop: '1px solid', borderColor: 'divider' }}>
         <Box sx={{ height: 2, backgroundImage: goldGradient }} />
         <Container maxWidth="xl" sx={{ pt: 7 }}>
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: '1.6fr repeat(3, 1fr)' }, gap: 5 }}>
             <Box sx={{ gridColumn: { xs: '1 / -1', md: 'auto' } }}>
-              <BrandLogo size="medium" tone="light" showTagline />
+              <BrandLogo size="medium" showTagline />
               <Typography variant="body2" sx={{ mt: 2.5, maxWidth: 340, lineHeight: 1.8 }}>
                 {BRAND.description}
               </Typography>
             </Box>
             {FOOTER_COLUMNS.map((col) => (
               <Box key={col.title}>
-                <Typography variant="overline" sx={{ color: 'secondary.light', display: 'block', mb: 1.5, fontSize: '0.68rem' }}>{col.title}</Typography>
+                <Typography variant="overline" sx={{ color: 'primary.main', display: 'block', mb: 1.5, fontSize: '0.68rem' }}>{col.title}</Typography>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
                   {col.links.map((l) => (
-                    <MuiLink key={l.label} component={Link} to={l.href} underline="none" color="inherit" variant="body2" sx={{ '&:hover': { color: '#fff' } }}>
+                    <MuiLink key={l.label} component={Link} to={l.href} underline="none" color="text.primary" variant="body2" sx={{ '&:hover': { color: 'primary.main' } }}>
                       {l.label}
                     </MuiLink>
                   ))}
@@ -163,7 +163,7 @@ export default function CustomerLayout() {
               </Box>
             ))}
           </Box>
-          <Divider sx={{ borderColor: 'rgba(255,255,255,0.12)', my: 5 }} />
+          <Divider sx={{ my: 5 }} />
           <Box sx={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
             <Typography variant="caption" sx={{ opacity: 0.6 }}>
               &copy; {new Date().getFullYear()} {BRAND.name} — an IHARO Groups marketplace. All rights reserved.
@@ -177,7 +177,7 @@ export default function CustomerLayout() {
         elevation={3}
         sx={{
           display: { xs: 'flex', md: 'none' }, position: 'fixed', bottom: 0, left: 0, right: 0,
-          justifyContent: 'space-around', py: 1, zIndex: 10, borderRadius: 0, bgcolor: 'primary.main',
+          justifyContent: 'space-around', py: 1, zIndex: 10, borderRadius: 0, bgcolor: '#FFFCF4', borderTop: '1px solid', borderColor: 'divider',
         }}
       >
         {[
@@ -193,8 +193,8 @@ export default function CustomerLayout() {
             to={to}
             end={to === '/'}
             sx={{
-              display: 'flex', flexDirection: 'column', alignItems: 'center', color: 'rgba(255,255,255,0.65)', textDecoration: 'none', gap: 0.25,
-              '&.active': { color: 'secondary.light' },
+              display: 'flex', flexDirection: 'column', alignItems: 'center', color: 'text.secondary', textDecoration: 'none', gap: 0.25,
+              '&.active': { color: 'primary.main', fontWeight: 700 },
             }}
           >
             <Icon fontSize="small" />

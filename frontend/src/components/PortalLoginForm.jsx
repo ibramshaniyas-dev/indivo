@@ -8,7 +8,7 @@ import { setUser } from '../store/slices/authSlice';
 import { login, persistSession } from '../services/auth.service';
 import BrandLogo, { ZMark } from './BrandLogo';
 import { BRAND } from '../brand';
-import { goldGradient } from '../theme';
+import { goldGradient, champagne } from '../theme';
 
 /**
  * Shared login form for all four portals. `isAllowed(user)` decides whether the authenticated
@@ -52,16 +52,16 @@ export default function PortalLoginForm({
       <Paper sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, overflow: 'hidden', borderRadius: 4, border: '1px solid', borderColor: 'divider', boxShadow: '0 24px 60px rgba(14,13,11,0.10)' }}>
         <Box
           sx={{
-            display: { xs: 'none', md: 'flex' }, flexDirection: 'column', justifyContent: 'space-between', p: 5, color: '#fff', bgcolor: 'primary.main', position: 'relative', overflow: 'hidden',
-            backgroundImage: 'radial-gradient(ellipse at 70% 60%, rgba(201,160,74,0.30) 0%, rgba(14,13,11,0) 60%)',
+            display: { xs: 'none', md: 'flex' }, flexDirection: 'column', justifyContent: 'space-between', p: 5, color: 'text.primary', position: 'relative', overflow: 'hidden',
+            background: champagne,
           }}
         >
-          <BrandLogo tone="light" showTagline to="/" />
-          <ZMark size={260} sx={{ position: 'absolute', right: -40, bottom: 40, opacity: 0.85, filter: 'drop-shadow(0 24px 48px rgba(0,0,0,0.5))' }} />
+          <BrandLogo showTagline to="/" />
+          <ZMark size={260} sx={{ position: 'absolute', right: -40, bottom: 40, opacity: 0.9, filter: 'drop-shadow(0 20px 36px rgba(122,85,23,0.25))' }} />
           <Box sx={{ position: 'relative' }}>
-            {portalLabel && <Typography variant="overline" sx={{ color: 'secondary.light', fontSize: '0.66rem' }}>{portalLabel}</Typography>}
+            {portalLabel && <Typography variant="overline" sx={{ color: 'primary.main', fontSize: '0.66rem' }}>{portalLabel}</Typography>}
             <Box sx={{ width: 44, height: 2, backgroundImage: goldGradient, my: 1.5 }} />
-            <Typography variant="body2" sx={{ opacity: 0.7, maxWidth: 260 }}>{BRAND.description}</Typography>
+            <Typography variant="body2" sx={{ color: 'text.secondary', maxWidth: 260 }}>{BRAND.description}</Typography>
           </Box>
         </Box>
 

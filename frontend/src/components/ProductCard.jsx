@@ -36,7 +36,7 @@ export default function ProductCard({ product, wishlisted = false, onToggleWishl
         {discount >= 5 && !outOfStock && (
           <Chip
             label={`${discount}% OFF`} size="small"
-            sx={{ position: 'absolute', top: 10, left: 10, height: 22, fontSize: '0.65rem', letterSpacing: '0.06em', bgcolor: 'primary.main', color: 'secondary.light' }}
+            sx={{ position: 'absolute', top: 10, left: 10, height: 22, fontSize: '0.65rem', letterSpacing: '0.06em', bgcolor: 'primary.main', color: '#fff' }}
           />
         )}
 
@@ -57,7 +57,7 @@ export default function ProductCard({ product, wishlisted = false, onToggleWishl
           <Chip
             label="Out of stock"
             size="small"
-            sx={{ position: 'absolute', bottom: 10, left: 10, bgcolor: 'rgba(14,13,11,0.85)', color: '#fff', fontWeight: 700 }}
+            sx={{ position: 'absolute', bottom: 10, left: 10, bgcolor: 'rgba(255,255,255,0.95)', color: 'error.main', border: '1px solid', borderColor: 'error.light', fontWeight: 700 }}
           />
         )}
       </Box>
