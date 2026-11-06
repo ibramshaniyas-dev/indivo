@@ -1,9 +1,14 @@
 import { useState } from 'react';
-import { Box, Paper, TextField, Button, Typography, Alert } from '@mui/material';
-import { useNavigate, Link } from 'react-router-dom';
+import { Box, Paper, TextField, Button, Typography, Alert, InputAdornment, IconButton } from '@mui/material';
+import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
+import VisibilityOffRoundedIcon from '@mui/icons-material/VisibilityOffRounded';
+import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setUser } from '../store/slices/authSlice';
 import { login, persistSession } from '../services/auth.service';
+import BrandLogo, { ZMark } from './BrandLogo';
+import { BRAND } from '../brand';
+import { goldGradient } from '../theme';
 
 /**
  * Shared login form for all four portals. `isAllowed(user)` decides whether the authenticated
@@ -11,9 +16,10 @@ import { login, persistSession } from '../services/auth.service';
  * independently authorized server-side regardless of which portal issued the token).
  */
 export default function PortalLoginForm({
-  title, subtitle, identifierLabel, isAllowed, wrongPortalMessage, redirectTo, footer,
+  title, subtitle, identifierLabel, isAllowed, wrongPortalMessage, redirectTo, footer, portalLabel,
 }) {
   const [form, setForm] = useState({ identifier: '', password: '' });
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
@@ -42,18 +48,51 @@ export default function PortalLoginForm({
   };
 
   return (
-    <Box sx={{ maxWidth: 400, mx: 'auto', mt: 6, px: 2 }}>
-      <Paper sx={{ p: 4 }}>
-        <Typography variant="h5" gutterBottom>{title}</Typography>
-        {subtitle && <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>{subtitle}</Typography>}
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-        <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <TextField label={identifierLabel} name="identifier" value={form.identifier} onChange={handleChange} required autoFocus />
-          <TextField label="Password" name="password" type="password" value={form.password} onChange={handleChange} required />
-          <Button type="submit" variant="contained" disabled={loading}>
-            {loading ? 'Signing in…' : 'Sign In'}
-          </Button>
-          {footer}
+    <Box sx={{ maxWidth: 940, mx: 'auto', my: { xs: 3, md: 7 }, px: 2 }}>
+      <Paper sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, overflow: 'hidden', borderRadius: 4, border: '1px solid', borderColor: 'divider', boxShadow: '0 24px 60px rgba(14,13,11,0.10)' }}>
+        <Box
+          sx={{
+            display: { xs: 'none', md: 'flex' }, flexDirection: 'column', justifyContent: 'space-between', p: 5, color: '#fff', bgcolor: 'primary.main', position: 'relative', overflow: 'hidden',
+            backgroundImage: 'radial-gradient(ellipse at 70% 60%, rgba(201,160,74,0.30) 0%, rgba(14,13,11,0) 60%)',
+          }}
+        >
+          <BrandLogo tone="light" showTagline to="/" />
+          <ZMark size={260} sx={{ position: 'absolute', right: -40, bottom: 40, opacity: 0.85, filter: 'drop-shadow(0 24px 48px rgba(0,0,0,0.5))' }} />
+          <Box sx={{ position: 'relative' }}>
+            {portalLabel && <Typography variant="overline" sx={{ color: 'secondary.light', fontSize: '0.66rem' }}>{portalLabel}</Typography>}
+            <Box sx={{ width: 44, height: 2, backgroundImage: goldGradient, my: 1.5 }} />
+            <Typography variant="body2" sx={{ opacity: 0.7, maxWidth: 260 }}>{BRAND.description}</Typography>
+          </Box>
+        </Box>
+
+        <Box sx={{ p: { xs: 3.5, sm: 5 } }}>
+          <Box sx={{ display: { xs: 'flex', md: 'none' }, justifyContent: 'center', mb: 3 }}>
+            <BrandLogo showTagline to="/" />
+          </Box>
+          <Typography variant="h4" component="h1" sx={{ fontSize: '1.75rem', mb: 0.5 }}>{title}</Typography>
+          {subtitle && <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>{subtitle}</Typography>}
+          {!subtitle && <Box sx={{ mb: 3 }} />}
+          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+          <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2.25 }}>
+            <TextField label={identifierLabel} name="identifier" value={form.identifier} onChange={handleChange} required autoFocus autoComplete="username" size="medium" />
+            <TextField
+              label="Password" name="password" type={showPassword ? 'text' : 'password'} value={form.password} onChange={handleChange}
+              required autoComplete="current-password" size="medium"
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton aria-label={showPassword ? 'Hide password' : 'Show password'} onClick={() => setShowPassword((v) => !v)} edge="end" size="small">
+                      {showPassword ? <VisibilityOffRoundedIcon fontSize="small" /> : <VisibilityRoundedIcon fontSize="small" />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
+            <Button type="submit" variant="contained" size="large" disabled={loading}>
+              {loading ? 'Signing in…' : 'Sign In'}
+            </Button>
+            {footer && <Box sx={{ mt: 1, '& a': { color: 'secondary.dark', fontWeight: 600 } }}>{footer}</Box>}
+          </Box>
         </Box>
       </Paper>
     </Box>

@@ -222,7 +222,7 @@ export default function OnboardingWizard() {
         {activeStep === 3 && (
           <Box>
             <Typography variant="body2" sx={{ mb: 2 }}>
-              By continuing, you agree to the INDIVO Marketplace Seller Agreement, including commission terms,
+              By continuing, you agree to the ZARKIZ Marketplace Seller Agreement, including commission terms,
               product listing policies, and settlement schedules.
             </Typography>
             <FormControlLabel

@@ -8,6 +8,7 @@ import MoreVertRoundedIcon from '@mui/icons-material/MoreVertRounded';
 import { useSearchParams } from 'react-router-dom';
 import DataTable from '../../components/DataTable';
 import StatusBadge from '../../components/StatusBadge';
+import { realImage } from '../../utils/images';
 import * as adminProductService from '../../services/adminProduct.service';
 
 const STATUS_FILTERS = ['', 'DRAFT', 'PENDING_REVIEW', 'ACTIVE', 'REJECTED', 'INACTIVE', 'BLOCKED', 'OUT_OF_STOCK'];
@@ -78,7 +79,7 @@ export default function AdminProducts() {
       label: 'Product',
       render: (p) => (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Avatar variant="rounded" src={p.image} sx={{ width: 40, height: 40, bgcolor: 'grey.100' }}>
+          <Avatar variant="rounded" src={realImage(p.image) || undefined}sx={{ width: 40, height: 40, bgcolor: 'grey.100' }}>
             <Inventory2RoundedIcon fontSize="small" sx={{ color: 'text.secondary' }} />
           </Avatar>
           <Box>

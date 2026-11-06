@@ -1,22 +1,35 @@
 import { useEffect, useState } from 'react';
-import { Box, Container, Typography, Grid } from '@mui/material';
+import { Box, Container, Typography, Grid, Skeleton, Button } from '@mui/material';
 import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded';
+import VerifiedOutlinedIcon from '@mui/icons-material/VerifiedOutlined';
+import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import ReplayRoundedIcon from '@mui/icons-material/ReplayRounded';
 import { Link } from 'react-router-dom';
 import SectionHeader from '../../components/SectionHeader';
 import EmptyState from '../../components/EmptyState';
 import ProductCard from '../../components/ProductCard';
 import ProductCardSkeleton from '../../components/ProductCardSkeleton';
 import HeroSlider from '../../components/HeroSlider';
+import CategoryIcon from '../../components/CategoryIcon';
 import { listProducts } from '../../services/product.service';
 import useWishlistToggle from '../../hooks/useWishlistToggle';
 import api from '../../services/api';
+import { BRAND } from '../../brand';
+
+const PROMISES = [
+  { icon: VerifiedOutlinedIcon, title: 'Verified Sellers', text: 'Every seller is reviewed before listing' },
+  { icon: LocalShippingOutlinedIcon, title: 'Tracked Delivery', text: 'Live shipment status on every order' },
+  { icon: LockOutlinedIcon, title: 'Secure Payments', text: 'Protected checkout, every time' },
+  { icon: ReplayRoundedIcon, title: 'Easy Returns', text: 'Simple returns on eligible items' },
+];
 
 function ProductGrid({ loading, products, wishlistIds, onToggleWishlist, emptyDescription }) {
   if (loading) {
     return (
-      <Grid container spacing={2}>
-        {Array.from({ length: 6 }).map((_, i) => (
-          <Grid item xs={6} sm={4} md={2} key={i}><ProductCardSkeleton /></Grid>
+      <Grid container spacing={{ xs: 1.5, md: 2.5 }}>
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Grid item xs={6} sm={4} md={3} key={i}><ProductCardSkeleton /></Grid>
         ))}
       </Grid>
     );
@@ -25,9 +38,9 @@ function ProductGrid({ loading, products, wishlistIds, onToggleWishlist, emptyDe
     return <EmptyState icon={StorefrontRoundedIcon} title="Nothing here yet" description={emptyDescription} />;
   }
   return (
-    <Grid container spacing={2}>
+    <Grid container spacing={{ xs: 1.5, md: 2.5 }}>
       {products.map((p) => (
-        <Grid item xs={6} sm={4} md={2} key={p.id}>
+        <Grid item xs={6} sm={4} md={3} key={p.id}>
           <ProductCard product={p} wishlisted={wishlistIds.includes(p.id)} onToggleWishlist={() => onToggleWishlist(p)} />
         </Grid>
       ))}
@@ -46,8 +59,8 @@ export default function Home() {
   useEffect(() => {
     Promise.all([
       api.get('/categories', { params: { parentId: 'null' } }),
-      listProducts({ sort: 'newest', limit: 12 }),
-      listProducts({ sort: 'rating', limit: 6 }),
+      listProducts({ sort: 'newest', limit: 8 }),
+      listProducts({ sort: 'rating', limit: 8 }),
       api.get('/cms/banners'),
     ])
       .then(([categoryRes, trendingRes, bestsellerRes, bannerRes]) => {
@@ -63,52 +76,78 @@ export default function Home() {
     <Box>
       <HeroSlider banners={banners} />
 
-      <Container maxWidth="xl" sx={{ py: 5 }}>
-        <SectionHeader title="Shop by Category" subtitle="Explore our most popular categories" />
-        <Grid container spacing={2} sx={{ mb: 6 }}>
+      <Box sx={{ bgcolor: '#fff', borderBottom: '1px solid', borderColor: 'divider' }}>
+        <Container maxWidth="xl">
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: { xs: 2, md: 3 }, py: 3 }}>
+            {PROMISES.map(({ icon: Icon, title, text }) => (
+              <Box key={title} sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <Box sx={{ width: 42, height: 42, borderRadius: '50%', border: '1px solid', borderColor: 'secondary.main', display: 'grid', placeItems: 'center', color: 'secondary.dark', flexShrink: 0 }}>
+                  <Icon fontSize="small" />
+                </Box>
+                <Box>
+                  <Typography variant="subtitle2" sx={{ lineHeight: 1.3 }}>{title}</Typography>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: { xs: 'none', sm: 'block' } }}>{text}</Typography>
+                </Box>
+              </Box>
+            ))}
+          </Box>
+        </Container>
+      </Box>
+
+      <Container maxWidth="xl" sx={{ py: { xs: 5, md: 8 } }}>
+        <SectionHeader eyebrow="Explore" title="Shop by Category" />
+        <Grid container spacing={{ xs: 1.5, md: 2 }} sx={{ mb: { xs: 6, md: 9 } }}>
           {(loading ? Array.from({ length: 6 }) : categories.slice(0, 12)).map((category, i) => (
-            <Grid item xs={6} sm={4} md={2} key={category?.id || i}>
+            <Grid item xs={4} sm={3} md={2} key={category?.id || i}>
               {category ? (
                 <Box
                   component={Link}
                   to={`/search?category=${category.id}`}
                   sx={{
-                    aspectRatio: '1 / 1', display: 'flex', flexDirection: 'column', alignItems: 'center',
-                    justifyContent: 'center', gap: 1, bgcolor: 'grey.50', borderRadius: 3, textDecoration: 'none',
-                    border: '1px solid', borderColor: 'divider', transition: 'all 0.2s ease',
-                    backgroundImage: category.image ? `url(${category.image})` : 'none',
-                    backgroundSize: 'cover', backgroundPosition: 'center',
-                    '&:hover': { borderColor: 'secondary.main', boxShadow: '0 8px 24px rgba(22,21,19,0.12)' },
+                    aspectRatio: '1 / 1', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    gap: 1.25, bgcolor: '#fff', borderRadius: 3, textDecoration: 'none', color: 'text.primary', px: 1,
+                    border: '1px solid', borderColor: 'divider', transition: 'all 0.25s ease',
+                    '& .cat-icon': { transition: 'all 0.25s ease' },
+                    '&:hover': { borderColor: 'secondary.main', bgcolor: 'primary.main', color: '#fff', transform: 'translateY(-3px)' },
+                    '&:hover .cat-icon': { color: 'secondary.light', borderColor: 'rgba(243,217,139,0.5)' },
                   }}
                 >
-                  {!category.image && <StorefrontRoundedIcon sx={{ fontSize: 28, color: 'text.secondary' }} />}
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      fontWeight: 700, textAlign: 'center', px: 1,
-                      color: category.image ? '#fff' : 'text.primary',
-                      textShadow: category.image ? '0 1px 4px rgba(0,0,0,0.6)' : 'none',
-                    }}
-                  >
+                  <Box className="cat-icon" sx={{ width: { xs: 44, md: 56 }, height: { xs: 44, md: 56 }, borderRadius: '50%', border: '1px solid', borderColor: 'divider', display: 'grid', placeItems: 'center', color: 'secondary.dark' }}>
+                    <CategoryIcon name={category.name} sx={{ fontSize: { xs: 22, md: 26 } }} />
+                  </Box>
+                  <Typography variant="caption" sx={{ fontWeight: 600, textAlign: 'center', letterSpacing: '0.04em', lineHeight: 1.3 }}>
                     {category.name}
                   </Typography>
                 </Box>
               ) : (
-                <Box sx={{ aspectRatio: '1 / 1', bgcolor: 'grey.100', borderRadius: 3 }} />
+                <Skeleton variant="rounded" sx={{ aspectRatio: '1 / 1', height: 'auto', borderRadius: 3 }} />
               )}
             </Grid>
           ))}
         </Grid>
 
-        <SectionHeader title="Trending Products" subtitle="Popular picks from across INDIVO" actionLabel="View All" actionHref="/search?sort=newest" />
-        <Box sx={{ mb: 6 }}>
+        <SectionHeader eyebrow="Just In" title="Trending Now" subtitle={`Fresh picks from across ${BRAND.name}`} actionLabel="View All" actionHref="/search?sort=newest" />
+        <Box sx={{ mb: { xs: 6, md: 9 } }}>
           <ProductGrid
             loading={loading} products={trending} wishlistIds={wishlistIds} onToggleWishlist={toggle}
             emptyDescription="Sellers are onboarding now — trending products will appear here as soon as listings go live."
           />
         </Box>
+      </Container>
 
-        <SectionHeader title="Best Rated" subtitle="Highest-rated products on INDIVO" actionLabel="View All" actionHref="/search?sort=rating" />
+      <Box sx={{ bgcolor: 'primary.main', color: '#fff', py: { xs: 6, md: 8 }, textAlign: 'center' }}>
+        <Container maxWidth="md">
+          <Typography variant="overline" sx={{ color: 'secondary.light', fontSize: '0.7rem' }}>Sell on {BRAND.name}</Typography>
+          <Typography variant="h3" sx={{ fontSize: { xs: '1.8rem', md: '2.6rem' }, my: 1.5 }}>Bring your craft to customers across India</Typography>
+          <Typography sx={{ opacity: 0.7, mb: 3.5, maxWidth: 520, mx: 'auto' }}>
+            List your products, manage orders and ship with integrated tracking — all from one seller dashboard.
+          </Typography>
+          <Button component={Link} to="/sell" variant="contained" color="secondary" size="large">Become a Seller</Button>
+        </Container>
+      </Box>
+
+      <Container maxWidth="xl" sx={{ py: { xs: 5, md: 8 } }}>
+        <SectionHeader eyebrow="Customer Favourites" title="Best Rated" subtitle={`Highest-rated products on ${BRAND.name}`} actionLabel="View All" actionHref="/search?sort=rating" />
         <ProductGrid
           loading={loading} products={bestsellers} wishlistIds={wishlistIds} onToggleWishlist={toggle}
           emptyDescription="Ratings will appear here once customers start reviewing products."

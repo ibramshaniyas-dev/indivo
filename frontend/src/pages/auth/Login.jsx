@@ -5,7 +5,9 @@ import PortalLoginForm from '../../components/PortalLoginForm';
 export default function Login() {
   return (
     <PortalLoginForm
-      title="Login to INDIVO"
+      title="Welcome back"
+      subtitle="Sign in to your ZARKIZ account"
+      portalLabel="Customer Sign In"
       identifierLabel="Mobile Number"
       isAllowed={(user) => user.userType === 'CUSTOMER'}
       wrongPortalMessage="This is the customer login. Sellers and admins have their own login pages."
@@ -13,7 +15,7 @@ export default function Login() {
       footer={
         <Box>
           <Typography variant="body2">
-            New to INDIVO? <Link to="/register">Create an account</Link>
+            New to ZARKIZ? <Link to="/register">Create an account</Link>
           </Typography>
           <Typography variant="body2" sx={{ mt: 1 }}>
             <Link to="/seller/login">Seller login</Link>

@@ -15,6 +15,8 @@ import PriceTag from '../../components/PriceTag';
 import SectionHeader from '../../components/SectionHeader';
 import ProductCard from '../../components/ProductCard';
 import Product360Viewer from '../../components/Product360Viewer';
+import ProductImage from '../../components/ProductImage';
+import { realImage } from '../../utils/images';
 import { getProductBySlug, listProducts } from '../../services/product.service';
 import { addToCart } from '../../services/cart.service';
 import { setCart } from '../../store/slices/cartSlice';
@@ -80,7 +82,9 @@ export default function ProductDetail() {
   const price = selectedVariant?.price ?? product.sellingPrice;
   const mrp = selectedVariant?.mrp ?? product.mrp;
   const stock = selectedVariant?.stock ?? 0;
-  const images = product.images?.length ? product.images : [{ url: null }];
+  // Only real product photos are shown; demo/stock placeholders fall back to the branded placeholder.
+  const realImages = (product.images || []).filter((img) => realImage(img.url));
+  const images = realImages.length ? realImages : [{ url: null }];
   const attributeGroups = {};
   (product.variants || []).forEach((v) => v.attributes?.forEach((a) => {
     (attributeGroups[a.name] ||= new Set()).add(a.value);
@@ -89,42 +93,45 @@ export default function ProductDetail() {
   return (
     <Container maxWidth="xl" sx={{ py: 3 }}>
       <Grid container spacing={4}>
-        <Grid item xs={12} md={5}>
-          {activeImage === 0 ? (
-            <Product360Viewer image={images[0]?.url} />
-          ) : (
-            <Box
-              sx={{
-                aspectRatio: '1 / 1', bgcolor: 'grey.100', borderRadius: 3, overflow: 'hidden',
-                backgroundImage: images[activeImage]?.url ? `url(${images[activeImage].url})` : 'none',
-                backgroundSize: 'cover', backgroundPosition: 'center',
-              }}
-            />
-          )}
-          {images.length > 1 && (
-            <Box sx={{ display: 'flex', gap: 1, mt: 1.5, overflowX: 'auto' }}>
-              {images.map((img, i) => (
-                <Box
-                  key={img.id || i}
-                  onClick={() => setActiveImage(i)}
-                  sx={{
-                    width: 64, height: 64, borderRadius: 2, flexShrink: 0, cursor: 'pointer',
-                    border: '2px solid', borderColor: i === activeImage ? 'primary.main' : 'divider',
-                    backgroundImage: img.url ? `url(${img.url})` : 'none', backgroundSize: 'cover', backgroundPosition: 'center',
-                  }}
-                />
-              ))}
-            </Box>
-          )}
+        <Grid item xs={12} md={6}>
+          <Box sx={{ position: { md: 'sticky' }, top: { md: 140 } }}>
+            {activeImage === 0 && images[0]?.url ? (
+              <Product360Viewer image={images[0].url} alt={product.name} />
+            ) : (
+              <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3, overflow: 'hidden' }}>
+                <ProductImage src={images[activeImage]?.url} alt={product.name} eager />
+              </Box>
+            )}
+            {images.length > 1 && (
+              <Box sx={{ display: 'flex', gap: 1.25, mt: 1.5, overflowX: 'auto', pb: 0.5 }}>
+                {images.map((img, i) => (
+                  <Box
+                    key={img.id || i}
+                    component="button"
+                    type="button"
+                    aria-label={`View image ${i + 1}`}
+                    onClick={() => setActiveImage(i)}
+                    sx={{
+                      width: 76, flexShrink: 0, p: 0, cursor: 'pointer', borderRadius: 2, overflow: 'hidden', bgcolor: '#fff',
+                      border: '1.5px solid', borderColor: i === activeImage ? 'secondary.main' : 'divider',
+                      opacity: i === activeImage ? 1 : 0.75, transition: 'all 0.2s ease', '&:hover': { opacity: 1 },
+                    }}
+                  >
+                    <ProductImage src={img.url} alt="" placeholderLabel={false} />
+                  </Box>
+                ))}
+              </Box>
+            )}
+          </Box>
         </Grid>
 
-        <Grid item xs={12} md={7}>
+        <Grid item xs={12} md={6}>
           {product.brand_name && (
-            <Typography variant="caption" sx={{ fontWeight: 700, textTransform: 'uppercase', color: 'text.secondary' }}>
+            <Typography variant="overline" sx={{ color: 'secondary.dark', fontSize: '0.7rem' }}>
               {product.brand_name}
             </Typography>
           )}
-          <Typography variant="h4" sx={{ mt: 0.5, mb: 1 }}>{product.name}</Typography>
+          <Typography variant="h4" component="h1" sx={{ mt: 0.5, mb: 1.5, fontSize: { xs: '1.6rem', md: '2.2rem' }, lineHeight: 1.2 }}>{product.name}</Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
             <RatingStars rating={product.rating} reviewCount={product.reviewCount} size={18} />
             <Typography variant="body2" color="text.secondary">

@@ -9,6 +9,7 @@ import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import EmptyState from '../../components/EmptyState';
+import ProductImage from '../../components/ProductImage';
 import { getCart, updateCartItem, removeCartItem } from '../../services/cart.service';
 import { setCart } from '../../store/slices/cartSlice';
 
@@ -90,11 +91,10 @@ export default function Cart() {
                   <Box
                     component={Link}
                     to={`/product/${item.productSlug}`}
-                    sx={{
-                      width: 80, height: 80, borderRadius: 2, flexShrink: 0, bgcolor: 'grey.100',
-                      backgroundImage: item.image ? `url(${item.image})` : 'none', backgroundSize: 'cover', backgroundPosition: 'center',
-                    }}
-                  />
+                    sx={{ width: 88, flexShrink: 0, borderRadius: 2, overflow: 'hidden', border: '1px solid', borderColor: 'divider', alignSelf: 'flex-start' }}
+                  >
+                    <ProductImage src={item.image} alt={item.productName} ratio="4 / 5" placeholderLabel={false} />
+                  </Box>
                   <Box sx={{ flexGrow: 1, minWidth: 0 }}>
                     <Typography component={Link} to={`/product/${item.productSlug}`} sx={{ color: 'text.primary', textDecoration: 'none', fontWeight: 500 }}>
                       {item.productName}

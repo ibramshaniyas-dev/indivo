@@ -34,7 +34,7 @@ export default function Register() {
   return (
     <Box sx={{ maxWidth: 420, mx: 'auto', mt: 6 }}>
       <Paper sx={{ p: 4 }}>
-        <Typography variant="h5" gutterBottom>Create your INDIVO account</Typography>
+        <Typography variant="h5" gutterBottom>Create your ZARKIZ account</Typography>
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
         <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <TextField label="Full Name" name="name" value={form.name} onChange={handleChange} required />

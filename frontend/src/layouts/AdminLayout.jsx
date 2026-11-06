@@ -9,6 +9,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { clearUser } from '../store/slices/authSlice';
 import { logout } from '../services/auth.service';
 import { ADMIN_NAV } from '../config/adminNav';
+import BrandLogo from '../components/BrandLogo';
 
 const DRAWER_WIDTH = 264;
 
@@ -38,9 +39,10 @@ export default function AdminLayout() {
 
   const sidebarContent = (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <Toolbar sx={{ px: 2 }}>
-        <Typography variant="h6" sx={{ fontWeight: 800, color: isSuperAdminPortal ? 'secondary.main' : '#fff' }}>
-          INDIVO {isSuperAdminPortal ? 'Control Center' : 'Admin'}
+      <Toolbar sx={{ px: 2, py: 2, flexDirection: 'column', alignItems: 'flex-start', gap: 0.75 }}>
+        <BrandLogo size="small" tone="light" to={basePath === '/super-admin' ? '/super-admin/dashboard' : '/admin/dashboard'} />
+        <Typography variant="overline" sx={{ color: 'secondary.light', fontSize: '0.6rem', lineHeight: 1 }}>
+          {isSuperAdminPortal ? 'Control Center' : 'Admin Portal'}
         </Typography>
       </Toolbar>
       <Divider sx={{ borderColor: 'rgba(255,255,255,0.12)' }} />
@@ -64,7 +66,7 @@ export default function AdminLayout() {
                     selected={active}
                     sx={{
                       mx: 1, borderRadius: 2, color: 'rgba(255,255,255,0.85)',
-                      '&.Mui-selected': { bgcolor: 'rgba(227,166,62,0.16)', color: 'secondary.light' },
+                      '&.Mui-selected': { bgcolor: 'rgba(201,160,74,0.16)', color: 'secondary.light', boxShadow: 'inset 2px 0 0 #C9A04A' },
                       '&:hover': { bgcolor: 'rgba(255,255,255,0.06)' },
                     }}
                   >

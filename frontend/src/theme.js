@@ -1,27 +1,31 @@
 import { createTheme } from '@mui/material/styles';
 
-// INDIVO design tokens, matching the official logo: deep black/charcoal + luxury gold on warm
-// white — deliberately avoids Amazon-orange / Flipkart-blue / Myntra-pink territory.
+// ZARKIZ design tokens, sampled from the brand logo: true black type, polished gold monogram,
+// warm champagne/cream ground. Headings use Jost (geometric, close to the logo wordmark).
 const colors = {
-  navy: { main: '#161513', light: '#2E2B27', dark: '#0A0908', contrastText: '#FFFFFF' },
-  gold: { main: '#C9974B', light: '#E3C48A', dark: '#9C7233', contrastText: '#161513' },
-  success: { main: '#1FA97A', light: '#E4F7EF' },
-  error: { main: '#E5484D', light: '#FDEAEA' },
-  warning: { main: '#F5A623', light: '#FEF3E0' },
-  info: { main: '#3B82F6', light: '#E9F1FE' },
+  navy: { main: '#0E0D0B', light: '#2A2620', dark: '#000000', contrastText: '#FFFFFF' },
+  gold: { main: '#C9A04A', light: '#F3D98B', dark: '#9A7228', contrastText: '#0E0D0B' },
+  success: { main: '#1E8E62', light: '#E3F4EC' },
+  error: { main: '#D6453D', light: '#FBE9E7' },
+  warning: { main: '#D9921C', light: '#FDF1DC' },
+  info: { main: '#2F6FDB', light: '#E7EFFC' },
   neutral: {
-    50: '#FAF8F4',
-    100: '#F3EFE7',
-    200: '#E6E0D4',
-    300: '#CFC6B4',
-    600: '#736C5E',
-    800: '#332F28',
-    900: '#1C1A16',
+    50: '#FBF8F1',
+    100: '#F5EEDF',
+    200: '#E9DFC9',
+    300: '#D4C5A5',
+    600: '#6F6551',
+    800: '#2F2A21',
+    900: '#16140F',
   },
 };
 
-const softShadow = '0 1px 2px rgba(22,21,19,0.05), 0 4px 12px rgba(22,21,19,0.07)';
-const liftShadow = '0 8px 24px rgba(22,21,19,0.14)';
+// Polished-gold gradient used for accents (CTAs, rules, badges) — mirrors the monogram.
+export const goldGradient = 'linear-gradient(100deg, #9A7228 0%, #D9B45E 35%, #F7E3A1 55%, #C9A04A 80%, #9A7228 100%)';
+export const headingFont = "'Jost', 'Plus Jakarta Sans', sans-serif";
+
+const softShadow = '0 1px 2px rgba(14,13,11,0.04), 0 6px 18px rgba(14,13,11,0.06)';
+const liftShadow = '0 14px 32px rgba(14,13,11,0.14)';
 
 const theme = createTheme({
   palette: {
@@ -35,64 +39,42 @@ const theme = createTheme({
     text: { primary: colors.neutral[900], secondary: colors.neutral[600] },
     divider: colors.neutral[200],
   },
-  shape: { borderRadius: 12 },
+  shape: { borderRadius: 10 },
   typography: {
     fontFamily: "'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif",
-    h1: { fontWeight: 700, letterSpacing: '-0.02em' },
-    h2: { fontWeight: 700, letterSpacing: '-0.02em' },
-    h3: { fontWeight: 700, letterSpacing: '-0.01em' },
-    h4: { fontWeight: 700, letterSpacing: '-0.01em' },
-    h5: { fontWeight: 600 },
-    h6: { fontWeight: 600 },
+    h1: { fontFamily: headingFont, fontWeight: 500, letterSpacing: '0.01em' },
+    h2: { fontFamily: headingFont, fontWeight: 500, letterSpacing: '0.01em' },
+    h3: { fontFamily: headingFont, fontWeight: 500, letterSpacing: '0.01em' },
+    h4: { fontFamily: headingFont, fontWeight: 500, letterSpacing: '0.01em' },
+    h5: { fontFamily: headingFont, fontWeight: 500, letterSpacing: '0.02em' },
+    h6: { fontFamily: headingFont, fontWeight: 500, letterSpacing: '0.02em' },
     subtitle1: { fontWeight: 600 },
     subtitle2: { fontWeight: 600 },
-    button: { fontWeight: 600, textTransform: 'none' },
+    overline: { fontWeight: 600, letterSpacing: '0.28em', lineHeight: 1.6 },
+    button: { fontWeight: 600, textTransform: 'none', letterSpacing: '0.02em' },
   },
-  shadows: [
-    'none',
-    softShadow,
-    softShadow,
-    softShadow,
-    liftShadow,
-    liftShadow,
-    liftShadow,
-    liftShadow,
-    liftShadow,
-    liftShadow,
-    liftShadow,
-    liftShadow,
-    liftShadow,
-    liftShadow,
-    liftShadow,
-    liftShadow,
-    liftShadow,
-    liftShadow,
-    liftShadow,
-    liftShadow,
-    liftShadow,
-    liftShadow,
-    liftShadow,
-    liftShadow,
-    liftShadow,
-  ],
+  shadows: ['none', softShadow, softShadow, softShadow, ...Array(21).fill(liftShadow)],
   components: {
     MuiCssBaseline: {
       styleOverrides: {
         body: { backgroundColor: colors.neutral[50] },
         '::selection': { backgroundColor: colors.gold.light },
+        img: { maxWidth: '100%' },
       },
     },
     MuiButton: {
       defaultProps: { disableElevation: true },
       styleOverrides: {
-        root: { borderRadius: 10, paddingInline: 18, paddingBlock: 9 },
-        sizeLarge: { paddingInline: 24, paddingBlock: 12, fontSize: '1rem' },
-        containedPrimary: {
-          '&:hover': { backgroundColor: colors.navy.light },
-        },
+        root: { borderRadius: 8, paddingInline: 20, paddingBlock: 9 },
+        sizeLarge: { paddingInline: 28, paddingBlock: 13, fontSize: '0.95rem' },
+        containedPrimary: { '&:hover': { backgroundColor: colors.navy.light } },
         containedSecondary: {
           color: colors.navy.main,
-          '&:hover': { backgroundColor: colors.gold.dark },
+          backgroundImage: goldGradient,
+          backgroundSize: '200% 100%',
+          backgroundPosition: '0% 0',
+          transition: 'background-position 0.5s ease, box-shadow 0.2s ease',
+          '&:hover': { backgroundPosition: '100% 0', boxShadow: '0 6px 18px rgba(154,114,40,0.35)' },
         },
         outlined: { borderWidth: 1.5, '&:hover': { borderWidth: 1.5 } },
       },
@@ -100,10 +82,10 @@ const theme = createTheme({
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: 16,
-          boxShadow: softShadow,
+          borderRadius: 14,
+          boxShadow: 'none',
           border: `1px solid ${colors.neutral[200]}`,
-          transition: 'box-shadow 0.2s ease, transform 0.2s ease',
+          transition: 'box-shadow 0.25s ease, transform 0.25s ease, border-color 0.25s ease',
         },
       },
     },
@@ -113,32 +95,25 @@ const theme = createTheme({
         elevation1: { boxShadow: softShadow },
       },
     },
-    MuiChip: {
-      styleOverrides: {
-        root: { borderRadius: 8, fontWeight: 600 },
-      },
-    },
-    MuiTextField: {
-      defaultProps: { size: 'small' },
-    },
+    MuiChip: { styleOverrides: { root: { borderRadius: 6, fontWeight: 600 } } },
+    MuiTextField: { defaultProps: { size: 'small' } },
     MuiOutlinedInput: {
       styleOverrides: {
         root: {
-          borderRadius: 10,
+          borderRadius: 8,
           backgroundColor: '#FFFFFF',
-          '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: colors.navy.light },
-          '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: colors.navy.main, borderWidth: 1.5 },
+          '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: colors.gold.dark },
+          '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: colors.gold.main, borderWidth: 1.5 },
         },
       },
     },
-    MuiAppBar: {
-      styleOverrides: {
-        root: { boxShadow: '0 1px 0 rgba(22,21,19,0.1)' },
-      },
-    },
+    MuiInputLabel: { styleOverrides: { root: { '&.Mui-focused': { color: colors.gold.dark } } } },
+    MuiAppBar: { styleOverrides: { root: { boxShadow: 'none' } } },
+    MuiTab: { styleOverrides: { root: { textTransform: 'none', fontWeight: 600 } } },
+    MuiTabs: { styleOverrides: { indicator: { backgroundColor: colors.gold.main, height: 2.5 } } },
     MuiTableCell: {
       styleOverrides: {
-        head: { fontWeight: 700, color: colors.neutral[800], backgroundColor: colors.neutral[50] },
+        head: { fontWeight: 700, color: colors.neutral[800], backgroundColor: colors.neutral[100] },
       },
     },
   },

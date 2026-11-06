@@ -6,6 +6,7 @@ import Inventory2RoundedIcon from '@mui/icons-material/Inventory2Rounded';
 import { Link, useNavigate } from 'react-router-dom';
 import DataTable from '../../components/DataTable';
 import StatusBadge from '../../components/StatusBadge';
+import { realImage } from '../../utils/images';
 import EmptyState from '../../components/EmptyState';
 import * as sellerProductService from '../../services/sellerProduct.service';
 
@@ -35,7 +36,7 @@ export default function SellerProducts() {
       label: 'Product',
       render: (p) => (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Avatar variant="rounded" src={p.image} sx={{ width: 40, height: 40, bgcolor: 'grey.100' }}>
+          <Avatar variant="rounded" src={realImage(p.image) || undefined}sx={{ width: 40, height: 40, bgcolor: 'grey.100' }}>
             <Inventory2RoundedIcon fontSize="small" sx={{ color: 'text.secondary' }} />
           </Avatar>
           <Box>
@@ -72,7 +73,7 @@ export default function SellerProducts() {
           <EmptyState
             icon={Inventory2RoundedIcon}
             title="No products yet"
-            description="Add your first product to start selling on INDIVO."
+            description="Add your first product to start selling on ZARKIZ."
             actionLabel="Add Product"
             onAction={() => navigate('/seller/products/new')}
           />

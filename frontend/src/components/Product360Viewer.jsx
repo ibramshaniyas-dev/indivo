@@ -4,6 +4,7 @@ import ThreeSixtyRoundedIcon from '@mui/icons-material/ThreeSixtyRounded';
 import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded';
 import PauseRoundedIcon from '@mui/icons-material/PauseRounded';
 import RestartAltRoundedIcon from '@mui/icons-material/RestartAltRounded';
+import ProductImage from './ProductImage';
 
 const MAX_ANGLE = 35;
 
@@ -13,7 +14,7 @@ const MAX_ANGLE = 35;
  * a real 3D interaction, not a claim of multi-angle product photography or a generated 3D model —
  * genuine multi-angle capture is future work once sellers can upload angle sequences.
  */
-export default function Product360Viewer({ image }) {
+export default function Product360Viewer({ image, alt = '' }) {
   const [rotation, setRotation] = useState(0);
   const [autoRotate, setAutoRotate] = useState(false);
   const dragRef = useRef({ dragging: false, startX: 0, startRotation: 0 });
@@ -80,20 +81,20 @@ export default function Product360Viewer({ image }) {
         onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerUp}
         sx={{
-          aspectRatio: '1 / 1', borderRadius: 3, overflow: 'hidden', bgcolor: 'grey.100',
+          borderRadius: 3, overflow: 'hidden', border: '1px solid', borderColor: 'divider',
           perspective: 900, cursor: 'grab', touchAction: 'none', '&:active': { cursor: 'grabbing' },
         }}
       >
         <Box
           sx={{
-            width: '100%', height: '100%', transformStyle: 'preserve-3d',
+            transformStyle: 'preserve-3d',
             transform: `rotateY(${rotation}deg)`,
             transition: dragRef.current.dragging ? 'none' : 'transform 0.15s ease-out',
-            backgroundImage: image ? `url(${image})` : 'none',
-            backgroundSize: 'cover', backgroundPosition: 'center',
-            boxShadow: `${rotation / 2}px 0 24px rgba(22,21,19,0.15)`,
+            '& img': { userSelect: 'none', pointerEvents: 'none' },
           }}
-        />
+        >
+          <ProductImage src={image} alt={alt} eager />
+        </Box>
       </Box>
     </Box>
   );

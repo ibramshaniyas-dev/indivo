@@ -76,7 +76,7 @@ export default function Checkout() {
           amount: payment.amount,
           currency: payment.currency,
           razorpayOrderId: payment.razorpayOrderId,
-          name: 'INDIVO',
+          name: 'ZARKIZ',
           description: 'Order payment',
           prefill: { name: shippingAddress.name, contact: shippingAddress.mobile },
         });

@@ -6,7 +6,8 @@ export default function SellerLogin() {
   return (
     <PortalLoginForm
       title="Seller Login"
-      subtitle="Manage your INDIVO store"
+      subtitle="Manage your ZARKIZ store"
+      portalLabel="Seller Hub"
       identifierLabel="Mobile Number or Email"
       isAllowed={(user) => user.userType === 'SELLER_STAFF'}
       wrongPortalMessage="This is the seller login. Use the customer or admin login instead."
