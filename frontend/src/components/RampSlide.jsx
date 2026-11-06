@@ -105,17 +105,17 @@ export default function RampSlide({ products, loading, eyebrow = 'On the Ramp', 
                   onClick={d === 0 ? undefined : () => setIndex(i)}
                   aria-label={d === 0 ? `View ${p.name}` : `Show ${p.name}`}
                   sx={{
-                    position: 'absolute', left: '50%', bottom: { xs: '8%', md: '9%' }, width: { xs: '44%', sm: '34%', md: '30%' },
+                    position: 'absolute', left: '50%', bottom: { xs: '8%', md: '9%' }, width: { xs: '42%', sm: '30%', md: '26%' },
                     border: 0, p: 0, bgcolor: 'transparent', cursor: 'pointer', display: 'block',
-                    transform: `translateX(calc(-50% + ${d * 62}%)) translateY(${-a * 7}%) scale(${scale})`,
+                    transform: `translateX(calc(-50% + ${d * 72}%)) translateY(${-a * 6}%) scale(${scale})`,
                     transformOrigin: '50% 100%', zIndex: 10 - a, opacity: a === VISIBLE ? 0 : 1 - a * 0.18,
                     filter: a ? `saturate(${1 - a * 0.15})` : 'none',
                     transition: 'transform 0.7s cubic-bezier(.22,.8,.24,1), opacity 0.7s ease, filter 0.7s ease',
                   }}
                 >
                   <ProductImage
-                    src={p.image} alt={p.name} ratio="3 / 4" placeholderLabel={false} eager={a <= 1}
-                    sx={{ bgcolor: 'transparent', backgroundImage: 'none', '& img': { mixBlendMode: 'multiply', p: 0 } }}
+                    src={p.image} alt={p.name} ratio="3 / 4" fit="cover" rounded="14px" placeholderLabel={false} eager={a <= 1}
+                    sx={{ boxShadow: a === 0 ? '0 24px 48px rgba(14,13,11,0.22)' : '0 12px 28px rgba(14,13,11,0.14)', border: '1px solid rgba(255,255,255,0.6)' }}
                   />
                   {/* contact shadow on the floor */}
                   <Box sx={{ position: 'absolute', left: '15%', right: '15%', bottom: -6, height: 14, borderRadius: '50%', background: 'radial-gradient(ellipse at center, rgba(14,13,11,0.22) 0%, rgba(14,13,11,0) 70%)', zIndex: -1 }} />

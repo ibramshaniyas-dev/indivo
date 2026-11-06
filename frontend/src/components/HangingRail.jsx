@@ -157,8 +157,8 @@ export default function HangingRail({ tabs, eyebrow = 'New Collection', titleSta
                   <Hanger />
                   <Box sx={{ position: 'relative', mt: '-6px' }}>
                     <ProductImage
-                      src={p.image} alt={p.name} ratio="3 / 4" placeholderLabel={false}
-                      sx={{ bgcolor: 'transparent', backgroundImage: 'none', '& img': { mixBlendMode: 'multiply', p: '2%' } }}
+                      src={p.image} alt={p.name} ratio="3 / 4" fit="cover" rounded="6px 6px 12px 12px" placeholderLabel={false}
+                      sx={{ boxShadow: '0 18px 30px rgba(14,13,11,0.14)', mx: '6%', width: '88%' }}
                     />
                     {/* Swing tag */}
                     <Box sx={{ position: 'absolute', top: 6, left: '50%', transform: 'translateX(-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', pointerEvents: 'none' }}>
