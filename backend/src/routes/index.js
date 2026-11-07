@@ -23,6 +23,7 @@ const paymentRoutes = require('./payment.routes');
 const settingsRoutes = require('./settings.routes');
 const adminSettingsRoutes = require('./admin/settings.routes');
 const adminAnalyticsRoutes = require('./admin/analytics.routes');
+const adminCommissionRoutes = require('./admin/commission.routes');
 
 const router = express.Router();
 
@@ -50,6 +51,7 @@ router.use('/payments', paymentRoutes);
 router.use('/settings', settingsRoutes);
 router.use('/admin/settings', adminSettingsRoutes);
 router.use('/admin/analytics', adminAnalyticsRoutes);
+router.use('/admin/commission', adminCommissionRoutes);
 
 // Phase 1 (remaining): returns/refunds admin flow.
 

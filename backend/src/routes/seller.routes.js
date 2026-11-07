@@ -5,6 +5,7 @@ const productController = require('../controllers/product.controller');
 const sellerOrderController = require('../controllers/sellerOrder.controller');
 const sellerShipmentController = require('../controllers/sellerShipment.controller');
 const analyticsController = require('../controllers/analytics.controller');
+const commissionController = require('../controllers/commission.controller');
 const validators = require('../validators/seller.validator');
 const productValidators = require('../validators/product.validator');
 const sellerOrderValidators = require('../validators/sellerOrder.validator');
@@ -20,6 +21,7 @@ router.get('/:id/store', controller.getStore);
 
 router.get('/me', authenticate, sellerScope, controller.getMe);
 router.get('/me/analytics', authenticate, sellerScope, analyticsController.sellerDashboard);
+router.get('/me/earnings', authenticate, sellerScope, commissionController.sellerEarnings);
 router.put('/business', authenticate, sellerScope, validators.business, validate, controller.updateBusiness);
 router.put('/bank', authenticate, sellerScope, validators.bank, validate, controller.updateBank);
 router.post('/agreement', authenticate, sellerScope, controller.acceptAgreement);

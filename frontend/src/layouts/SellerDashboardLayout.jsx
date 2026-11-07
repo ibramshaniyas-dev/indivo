@@ -10,6 +10,7 @@ import AddBoxRoundedIcon from '@mui/icons-material/AddBoxRounded';
 import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded';
 import WarehouseRoundedIcon from '@mui/icons-material/WarehouseRounded';
 import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
+import AccountBalanceWalletRoundedIcon from '@mui/icons-material/AccountBalanceWalletRounded';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { clearUser } from '../store/slices/authSlice';
@@ -24,6 +25,7 @@ const NAV = [
   { label: 'Add Product', icon: AddBoxRoundedIcon, to: '/seller/products/new' },
   { label: 'Inventory', icon: WarehouseRoundedIcon, to: '/seller/inventory' },
   { label: 'Orders', icon: ReceiptLongRoundedIcon, to: '/seller/orders' },
+  { label: 'Earnings', icon: AccountBalanceWalletRoundedIcon, to: '/seller/earnings' },
   { label: 'Profile', icon: PersonRoundedIcon, to: '/seller/profile' },
 ];
 
