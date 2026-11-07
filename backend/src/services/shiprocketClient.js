@@ -1,6 +1,6 @@
 const axios = require('axios');
-const env = require('../config/env');
 const logger = require('../utils/logger');
+const settings = require('./settings.service');
 
 const REQUEST_TIMEOUT_MS = 15000;
 // Shiprocket documents the auth token as valid for 10 days; refresh a little early so a
@@ -10,7 +10,17 @@ const TOKEN_TTL_MS = 9 * 24 * 60 * 60 * 1000;
 let cachedToken = null;
 let cachedTokenExpiresAt = 0;
 
-const http = axios.create({ baseURL: env.shiprocket.baseUrl, timeout: REQUEST_TIMEOUT_MS });
+// Credentials and base URL come from Super Admin → Settings → Shiprocket (falling back to .env),
+// read per request so a change in the dashboard applies immediately.
+const http = axios.create({ timeout: REQUEST_TIMEOUT_MS });
+
+// A credential change invalidates the cached login token.
+settings.onChange((groups) => {
+  if (groups.includes('shiprocket')) {
+    cachedToken = null;
+    cachedTokenExpiresAt = 0;
+  }
+});
 
 function redact(data) {
   if (!data || typeof data !== 'object') return data;
@@ -31,14 +41,15 @@ class ShiprocketApiError extends Error {
 }
 
 async function fetchToken() {
-  if (!env.shiprocket.email || !env.shiprocket.password) {
-    throw new ShiprocketApiError('Shiprocket credentials are not configured (SHIPROCKET_EMAIL/SHIPROCKET_PASSWORD)');
+  const cfg = await settings.getGroup('shiprocket');
+  if (!cfg.email || !cfg.password) {
+    throw new ShiprocketApiError('Shiprocket credentials are not configured (Super Admin → Settings → Shiprocket)');
   }
   try {
     const { data } = await http.post('/auth/login', {
-      email: env.shiprocket.email,
-      password: env.shiprocket.password,
-    });
+      email: cfg.email,
+      password: cfg.password,
+    }, { baseURL: cfg.base_url });
     if (!data?.token) {
       throw new ShiprocketApiError('Shiprocket login response did not include a token', { details: redact(data) });
     }
@@ -70,8 +81,10 @@ async function getToken() {
  */
 async function request(method, endpoint, { data, params, retryOn401 = true } = {}) {
   const token = await getToken();
+  const baseURL = await settings.get('shiprocket', 'base_url');
   try {
     const response = await http.request({
+      baseURL,
       method,
       url: endpoint,
       data,
@@ -96,8 +109,16 @@ async function request(method, endpoint, { data, params, retryOn401 = true } = {
   }
 }
 
+/** Dashboard "Test connection": forces a fresh login with the current saved credentials. */
+async function testConnection() {
+  cachedToken = null;
+  await getToken();
+  return true;
+}
+
 module.exports = {
   get: (endpoint, params) => request('get', endpoint, { params }),
   post: (endpoint, data) => request('post', endpoint, { data }),
+  testConnection,
   ShiprocketApiError,
 };

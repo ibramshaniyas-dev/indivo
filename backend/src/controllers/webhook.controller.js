@@ -1,5 +1,5 @@
 const db = require('../config/database');
-const env = require('../config/env');
+const settings = require('../services/settings.service');
 const logger = require('../utils/logger');
 const { success } = require('../utils/response');
 const razorpayService = require('../services/razorpay.service');
@@ -81,7 +81,7 @@ async function razorpayWebhook(req, res) {
   const signature = req.headers['x-razorpay-signature'];
   let externalEventId = null;
   try {
-    if (!razorpayService.verifyWebhookSignature(req.rawBody, signature)) {
+    if (!(await razorpayService.verifyWebhookSignature(req.rawBody, signature))) {
       logger.warn('Razorpay webhook: signature verification failed');
       return res.status(400).json({ success: false, message: 'Invalid signature' });
     }
@@ -121,7 +121,8 @@ async function shiprocketWebhook(req, res) {
   let externalEventId = null;
   try {
     const providedToken = req.headers['x-api-key'] || req.headers['x-webhook-token'];
-    if (!env.shiprocket.webhookToken || providedToken !== env.shiprocket.webhookToken) {
+    const webhookToken = await settings.get('shiprocket', 'webhook_token');
+    if (!webhookToken || providedToken !== webhookToken) {
       logger.warn('Shiprocket webhook: token verification failed');
       return res.status(400).json({ success: false, message: 'Invalid webhook token' });
     }

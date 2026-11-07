@@ -17,6 +17,7 @@ import { getCart } from '../services/cart.service';
 import { getWishlist } from '../services/wishlist.service';
 import BrandLogo from '../components/BrandLogo';
 import LocationPicker from '../components/LocationPicker';
+import useStoreSettings from '../hooks/useStoreSettings';
 import { BRAND } from '../brand';
 import { goldGradient, champagne, champagneSoft } from '../theme';
 import api from '../services/api';
@@ -34,6 +35,7 @@ export default function CustomerLayout() {
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [categories, setCategories] = useState([]);
+  const { general: store } = useStoreSettings();
 
   useEffect(() => {
     if (isAuthenticated && user?.userType === 'CUSTOMER') {
@@ -59,7 +61,7 @@ export default function CustomerLayout() {
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Box sx={{ background: champagne, color: '#5C3F10', py: 0.75, textAlign: 'center', borderBottom: '1px solid rgba(154,114,40,0.18)' }}>
         <Typography variant="overline" sx={{ fontSize: '0.62rem' }}>
-          {BRAND.tagline}
+          {store.tagline || BRAND.tagline}
         </Typography>
       </Box>
 
@@ -160,7 +162,7 @@ export default function CustomerLayout() {
             </Box>
             {FOOTER_COLUMNS.map((col) => (
               <Box key={col.title}>
-                <Typography variant="overline" sx={{ color: 'primary.main', display: 'block', mb: 1.5, fontSize: '0.68rem' }}>{col.title}</Typography>
+                <Typography variant="overline" sx={{ color: 'primary.main', display: 'block', mb: 1.5, fontSize: '0.68rem' }}>{col.title === BRAND.name ? store.site_name : col.title}</Typography>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
                   {col.links.map((l) => (
                     <MuiLink key={l.label} component={Link} to={l.href} underline="none" color="text.primary" variant="body2" sx={{ '&:hover': { color: 'primary.main' } }}>
@@ -173,10 +175,12 @@ export default function CustomerLayout() {
           </Box>
           <Divider sx={{ my: 5 }} />
           <Box sx={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
-            <Typography variant="caption" sx={{ opacity: 0.6 }}>
-              &copy; {new Date().getFullYear()} {BRAND.name} — an IHARO Groups marketplace. All rights reserved.
+            <Typography variant="caption" sx={{ opacity: 0.75 }}>
+              &copy; {new Date().getFullYear()} {store.site_name}. All rights reserved.{store.gstin ? ` · GSTIN ${store.gstin}` : ''}
             </Typography>
-            <Typography variant="caption" sx={{ opacity: 0.6 }}>{BRAND.supportEmail}</Typography>
+            <Typography variant="caption" sx={{ opacity: 0.75 }}>
+              {[store.support_email, store.support_phone].filter(Boolean).join(' · ')}
+            </Typography>
           </Box>
         </Container>
       </Box>

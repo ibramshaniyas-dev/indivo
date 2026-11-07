@@ -1,5 +1,6 @@
 const client = require('./shiprocketClient');
 const db = require('../config/database');
+const settings = require('./settings.service');
 const logger = require('../utils/logger');
 // Reused for the same "cascade to DELIVERED" side effect both the webhook and the polling sync
 // need — borrowing this from the controller layer (already the established pattern; webhook.
@@ -51,7 +52,7 @@ async function ensurePickupLocation(sellerId) {
   await client.post('/settings/company/addpickup', {
     pickup_location: pickupLocationName,
     name: seller.contact_person || seller.display_name,
-    email: owner?.email || 'support@indivo.iharogroups.com',
+    email: owner?.email || (await settings.get('general', 'support_email')) || 'support@seeshaa.com',
     phone: owner?.mobile || '9999999999',
     address: address.address_line1,
     address_2: address.address_line2 || '',
@@ -112,7 +113,7 @@ async function createOrder(sellerOrderId) {
     billing_pincode: sellerOrder.shipping_pincode,
     billing_state: sellerOrder.shipping_state,
     billing_country: 'India',
-    billing_email: sellerOrder.customer_email || 'no-reply@indivo.iharogroups.com',
+    billing_email: sellerOrder.customer_email || (await settings.get('general', 'support_email')) || 'support@seeshaa.com',
     billing_phone: sellerOrder.shipping_mobile,
     shipping_is_billing: true,
     order_items: items.map((item) => ({

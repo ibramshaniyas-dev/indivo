@@ -45,6 +45,8 @@ const Brands = lazy(() => import('./pages/admin/Brands'));
 const AdminUsers = lazy(() => import('./pages/admin/AdminUsers'));
 const RolesPermissions = lazy(() => import('./pages/admin/RolesPermissions'));
 const ComingSoon = lazy(() => import('./pages/admin/ComingSoon'));
+const AdminSettings = lazy(() => import('./pages/admin/Settings'));
+const MyProfile = lazy(() => import('./pages/admin/Profile'));
 
 function adminRoutes() {
   return (
@@ -72,7 +74,8 @@ function adminRoutes() {
       <Route path="admin-users" element={<ProtectedRoute permission="users.view"><AdminUsers /></ProtectedRoute>} />
       <Route path="roles" element={<ProtectedRoute permission="roles.view"><RolesPermissions /></ProtectedRoute>} />
       <Route path="notifications" element={<ProtectedRoute permission="notifications.view"><ComingSoon title="Notifications" /></ProtectedRoute>} />
-      <Route path="settings" element={<ProtectedRoute permission="settings.view"><ComingSoon title="Settings" /></ProtectedRoute>} />
+      <Route path="settings" element={<ProtectedRoute permission="settings.view"><AdminSettings /></ProtectedRoute>} />
+      <Route path="profile" element={<MyProfile />} />
       <Route path="audit-logs" element={<ProtectedRoute permission="audit_logs.view"><ComingSoon title="Audit Logs" /></ProtectedRoute>} />
     </>
   );
@@ -125,7 +128,7 @@ export default function App() {
           <Route path="/seller/inventory" element={<ComingSoon title="Inventory" />} />
           <Route path="/seller/orders" element={<SellerOrders />} />
           <Route path="/seller/orders/:id" element={<SellerOrderDetail />} />
-          <Route path="/seller/profile" element={<ComingSoon title="Profile & Settings" />} />
+          <Route path="/seller/profile" element={<MyProfile />} />
         </Route>
 
         <Route

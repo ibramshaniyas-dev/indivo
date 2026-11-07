@@ -25,4 +25,15 @@ const login = [
 
 const refresh = [body('refreshToken').notEmpty().withMessage('Refresh token is required')];
 
-module.exports = { registerCustomer, login, refresh };
+const updateMe = [
+  body('name').optional({ values: 'falsy' }).trim().isLength({ min: 2, max: 150 }).withMessage('Name must be 2–150 characters'),
+  body('email').optional({ values: 'falsy' }).trim().isEmail().withMessage('Enter a valid email').normalizeEmail({ gmail_remove_dots: false }),
+  body('mobile').optional({ values: 'falsy' }).trim().matches(/^[6-9]\d{9}$/).withMessage('Enter a valid 10-digit mobile number'),
+];
+
+const changePassword = [
+  body('currentPassword').notEmpty().withMessage('Current password is required'),
+  body('newPassword').isLength({ min: 8 }).withMessage('New password must be at least 8 characters'),
+];
+
+module.exports = { registerCustomer, login, refresh, updateMe, changePassword };

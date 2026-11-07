@@ -128,6 +128,10 @@ export default function AdminLayout() {
                 </Box>
               </MenuItem>
               <Divider />
+              <MenuItem component={Link} to={`${basePath}/profile`} onClick={() => setMenuAnchor(null)}>My Profile</MenuItem>
+              {user?.isSuperAdmin && (
+                <MenuItem component={Link} to={`${basePath}/settings`} onClick={() => setMenuAnchor(null)}>Settings</MenuItem>
+              )}
               <MenuItem onClick={handleLogout}>Logout</MenuItem>
             </Menu>
           </Toolbar>

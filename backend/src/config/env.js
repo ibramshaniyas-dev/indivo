@@ -75,7 +75,7 @@ module.exports = {
   superAdmin: {
     mobile: process.env.SUPER_ADMIN_MOBILE,
     password: process.env.SUPER_ADMIN_PASSWORD,
-    name: process.env.SUPER_ADMIN_NAME || 'INDIVO Super Admin',
+    name: process.env.SUPER_ADMIN_NAME || 'SEESHAA Super Admin',
     email: process.env.SUPER_ADMIN_EMAIL,
   },
 };

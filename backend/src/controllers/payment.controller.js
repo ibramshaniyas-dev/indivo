@@ -1,13 +1,17 @@
 const db = require('../config/database');
-const env = require('../config/env');
 const ApiError = require('../utils/ApiError');
 const { success } = require('../utils/response');
 const razorpayService = require('../services/razorpay.service');
 
-function getConfig(req, res) {
-  return success(res, {
-    data: { onlinePaymentsEnabled: env.razorpay.isConfigured, keyId: env.razorpay.isConfigured ? env.razorpay.keyId : null },
-  });
+async function getConfig(req, res, next) {
+  try {
+    const rzp = await razorpayService.getConfig();
+    return success(res, {
+      data: { onlinePaymentsEnabled: rzp.isConfigured, keyId: rzp.isConfigured ? rzp.key_id : null },
+    });
+  } catch (err) {
+    return next(err);
+  }
 }
 
 async function loadOwnedOrder(orderId, customerId) {
@@ -25,7 +29,8 @@ async function loadOwnedOrder(orderId, customerId) {
  */
 async function createPayment(req, res, next) {
   try {
-    if (!env.razorpay.isConfigured) {
+    const rzp = await razorpayService.getConfig();
+    if (!rzp.isConfigured) {
       throw new ApiError(503, 'Online payments are not available yet — please choose Cash on Delivery');
     }
 
@@ -40,7 +45,7 @@ async function createPayment(req, res, next) {
       return success(res, {
         data: {
           orderId: order.id, orderNumber: order.order_number, razorpayOrderId: txn.razorpay_order_id,
-          amount: Number(order.grand_total), currency: 'INR', keyId: env.razorpay.keyId,
+          amount: Number(order.grand_total), currency: 'INR', keyId: rzp.key_id,
         },
       });
     }
@@ -60,7 +65,7 @@ async function createPayment(req, res, next) {
       status: 201,
       data: {
         orderId: order.id, orderNumber: order.order_number, razorpayOrderId: razorpayOrder.id,
-        amount: Number(order.grand_total), currency: 'INR', keyId: env.razorpay.keyId,
+        amount: Number(order.grand_total), currency: 'INR', keyId: rzp.key_id,
       },
     });
   } catch (err) {
@@ -88,7 +93,7 @@ async function verifyPayment(req, res, next) {
       return success(res, { message: 'Payment already verified', data: { paymentStatus: 'PAID' } });
     }
 
-    const isValid = razorpayService.verifyPaymentSignature({ razorpayOrderId, razorpayPaymentId, razorpaySignature });
+    const isValid = await razorpayService.verifyPaymentSignature({ razorpayOrderId, razorpayPaymentId, razorpaySignature });
     if (!isValid) {
       await db.query(
         `UPDATE payment_transactions SET status = 'FAILED', failure_reason = 'Signature verification failed' WHERE id = :id`,

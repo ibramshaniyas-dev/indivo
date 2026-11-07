@@ -1,10 +1,15 @@
 const db = require('../config/database');
 const { success } = require('../utils/response');
 const { placeOrder } = require('../services/checkout.service');
+const settings = require('../services/settings.service');
+const ApiError = require('../utils/ApiError');
 
 async function checkout(req, res, next) {
   try {
     const { address, paymentMethod, idempotencyKey, saveAddress } = req.body;
+    if (paymentMethod === 'COD' && !(await settings.get('order', 'cod_enabled'))) {
+      throw ApiError.badRequest('Cash on Delivery is currently unavailable — please pay online');
+    }
     const result = await placeOrder({ customerId: req.user.customerId, address, paymentMethod, idempotencyKey });
 
     // Best-effort: if the customer typed a fresh address rather than picking a saved one,

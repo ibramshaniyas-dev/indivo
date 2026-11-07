@@ -12,6 +12,7 @@ import { listAddresses } from '../../services/customerAddress.service';
 import { getPaymentConfig, createPayment, verifyPayment } from '../../services/payment.service';
 import { openRazorpayCheckout } from '../../utils/razorpay';
 import { setCart, resetCart } from '../../store/slices/cartSlice';
+import useStoreSettings from '../../hooks/useStoreSettings';
 
 function formatINR(value) {
   return `₹${Number(value).toLocaleString('en-IN')}`;
@@ -32,6 +33,14 @@ export default function Checkout() {
   const [paymentMethod, setPaymentMethod] = useState('COD');
   const [paymentConfig, setPaymentConfig] = useState({ onlinePaymentsEnabled: false, keyId: null });
   const [retryingPayment, setRetryingPayment] = useState(false);
+  const { order: orderSettings } = useStoreSettings();
+  const codEnabled = orderSettings.cod_enabled !== false;
+  const noPaymentOption = !loading && !codEnabled && !paymentConfig.onlinePaymentsEnabled;
+
+  // If the admin switched COD off, default to online payment when it's available.
+  useEffect(() => {
+    if (!codEnabled && paymentMethod === 'COD' && paymentConfig.onlinePaymentsEnabled) setPaymentMethod('ONLINE');
+  }, [codEnabled, paymentConfig.onlinePaymentsEnabled]);
 
   const idempotencyKey = useMemo(() => crypto.randomUUID(), []);
   // Redux's resetCart() can re-render this still-mounted component (with an empty cart) before
@@ -191,7 +200,7 @@ export default function Checkout() {
             <Divider sx={{ my: 3 }} />
             <Typography variant="subtitle1" sx={{ mb: 1 }}>Payment Method</Typography>
             <RadioGroup value={paymentMethod} onChange={(e) => { setPaymentMethod(e.target.value); setRetryingPayment(false); }}>
-              <FormControlLabel value="COD" control={<Radio />} label="Cash on Delivery" />
+              <FormControlLabel value="COD" control={<Radio />} disabled={!codEnabled} label={codEnabled ? 'Cash on Delivery' : 'Cash on Delivery (currently unavailable)'} />
               <FormControlLabel
                 value="ONLINE"
                 control={<Radio />}
@@ -199,13 +208,16 @@ export default function Checkout() {
                 label="Pay Online — UPI, Cards, Netbanking (via Razorpay)"
               />
             </RadioGroup>
-            {!paymentConfig.onlinePaymentsEnabled && (
+            {!paymentConfig.onlinePaymentsEnabled && codEnabled && (
               <Typography variant="caption" color="text.secondary">
                 Online payment is coming soon — Cash on Delivery is the only option right now.
               </Typography>
             )}
+            {noPaymentOption && (
+              <Alert severity="warning" sx={{ mt: 1 }}>Checkout is temporarily unavailable. Please try again a little later.</Alert>
+            )}
 
-            <Button type="submit" variant="contained" size="large" fullWidth disabled={placing} sx={{ mt: 3 }}>
+            <Button type="submit" variant="contained" size="large" fullWidth disabled={placing || noPaymentOption} sx={{ mt: 3 }}>
               {placing
                 ? (paymentMethod === 'ONLINE' ? 'Opening Payment…' : 'Placing Order…')
                 : retryingPayment

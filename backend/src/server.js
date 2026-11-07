@@ -7,7 +7,7 @@ const shipmentTrackingSyncJob = require('./jobs/shipmentTrackingSync.job');
 async function start() {
   await db.testConnection();
   app.listen(env.port, () => {
-    logger.info(`INDIVO API listening on port ${env.port} [${env.nodeEnv}]`);
+    logger.info(`SEESHAA API listening on port ${env.port} [${env.nodeEnv}]`);
   });
   shipmentTrackingSyncJob.start();
 }

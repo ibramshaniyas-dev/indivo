@@ -2,6 +2,7 @@ import { useId } from 'react';
 import { Box, Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { BRAND } from '../brand';
+import useStoreSettings from '../hooks/useStoreSettings';
 
 /**
  * The SEESHAA "S" monogram: two polished-gold bars with rounded outer ends, joined by a gently
@@ -37,6 +38,9 @@ export function BrandMark({ size = 40, sx }) {
  */
 export default function BrandLogo({ size = 'medium', tone = 'dark', showTagline = false, to = '/', sx }) {
   const dims = { small: { mark: 28, text: '1.15rem' }, medium: { mark: 36, text: '1.5rem' }, large: { mark: 64, text: '2.4rem' } }[size];
+  const { general } = useStoreSettings(); // name/tagline editable in Super Admin → Settings
+  const name = (general.site_name || BRAND.name).toUpperCase();
+  const tagline = general.tagline || BRAND.tagline;
   const content = (
     <>
       <BrandMark size={dims.mark} />
@@ -48,7 +52,7 @@ export default function BrandLogo({ size = 'medium', tone = 'dark', showTagline 
             lineHeight: 1, color: tone === 'light' ? '#FFFFFF' : '#0E0D0B',
           }}
         >
-          {BRAND.name}
+          {name}
         </Typography>
         {showTagline && (
           <Typography
@@ -58,7 +62,7 @@ export default function BrandLogo({ size = 'medium', tone = 'dark', showTagline 
               color: tone === 'light' ? 'secondary.light' : 'text.secondary', whiteSpace: 'nowrap',
             }}
           >
-            {BRAND.tagline}
+            {tagline}
           </Typography>
         )}
       </Box>
@@ -67,5 +71,5 @@ export default function BrandLogo({ size = 'medium', tone = 'dark', showTagline 
 
   const baseSx = { display: 'inline-flex', alignItems: 'center', gap: 1.25, textDecoration: 'none', flexShrink: 0, ...sx };
   if (to === null) return <Box sx={baseSx}>{content}</Box>;
-  return <Box component={Link} to={to} aria-label={`${BRAND.name} home`} sx={baseSx}>{content}</Box>;
+  return <Box component={Link} to={to} aria-label={`${name} home`} sx={baseSx}>{content}</Box>;
 }

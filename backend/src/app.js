@@ -33,7 +33,7 @@ app.use(
 );
 app.use(generalLimiter);
 
-app.get('/health', (req, res) => res.json({ success: true, message: 'INDIVO API is running' }));
+app.get('/health', (req, res) => res.json({ success: true, message: 'SEESHAA API is running' }));
 
 app.use(`/${env.upload.dir}`, express.static(path.join(process.cwd(), env.upload.dir)));
 
