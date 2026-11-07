@@ -43,10 +43,12 @@ export function TrendChart({ points, granularity, height = 240 }) {
   const pad = { top: 16, right: 12, bottom: 28, left: 52 };
   const w = width - pad.left - pad.right;
   const h = height - pad.top - pad.bottom;
-  const max = niceMax(Math.max(...points.map((p) => p.sales), 0));
+  const peak = Math.max(...points.map((p) => p.sales), 0);
+  const empty = peak === 0;
+  const max = niceMax(peak);
   const x = (i) => pad.left + (points.length <= 1 ? w / 2 : (i / (points.length - 1)) * w);
   const y = (v) => pad.top + h - (v / max) * h;
-  const ticks = [0, max / 2, max];
+  const ticks = empty ? [0] : [0, max / 2, max];
 
   const line = points.map((p, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(p.sales).toFixed(1)}`).join('');
   const area = points.length ? `${line}L${x(points.length - 1)},${pad.top + h}L${x(0)},${pad.top + h}Z` : '';
@@ -83,9 +85,17 @@ export function TrendChart({ points, granularity, height = 240 }) {
             <text x={pad.left - 8} y={y(t) + 4} textAnchor="end" fontSize="11" fill={AXIS_TEXT}>{inr(t, { compact: true })}</text>
           </g>
         ))}
-        {points.map((p, i) => (i % labelEvery === 0 || i === points.length - 1) && (
-          <text key={p.date} x={x(i)} y={height - 8} textAnchor="middle" fontSize="11" fill={AXIS_TEXT}>{fmtDate(p.date)}</text>
-        ))}
+        {points.map((p, i) => {
+          const last = points.length - 1;
+          // Every Nth label plus the last one; drop a regular label that would crowd the last.
+          const show = i === last || (i % labelEvery === 0 && last - i >= labelEvery * 0.6);
+          return show && (
+            <text key={p.date} x={x(i)} y={height - 8} textAnchor={i === last ? 'end' : i === 0 ? 'start' : 'middle'} fontSize="11" fill={AXIS_TEXT}>{fmtDate(p.date)}</text>
+          );
+        })}
+        {empty && (
+          <text x={pad.left + w / 2} y={pad.top + h / 2} textAnchor="middle" fontSize="13" fill={AXIS_TEXT}>No sales in this period</text>
+        )}
         <path d={area} fill="url(#zk-area)" />
         <path d={line} fill="none" stroke={SERIES_GOLD} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
         {hp && (
