@@ -16,6 +16,7 @@ import { setWishlist } from '../store/slices/wishlistSlice';
 import { getCart } from '../services/cart.service';
 import { getWishlist } from '../services/wishlist.service';
 import BrandLogo from '../components/BrandLogo';
+import LocationPicker from '../components/LocationPicker';
 import { BRAND } from '../brand';
 import { goldGradient, champagne, champagneSoft } from '../theme';
 import api from '../services/api';
@@ -67,6 +68,9 @@ export default function CustomerLayout() {
           <Toolbar disableGutters sx={{ gap: { xs: 1.5, md: 4 }, py: 1.5, flexWrap: { xs: 'wrap', md: 'nowrap' } }}>
             <BrandLogo size="medium" showTagline sx={{ display: { xs: 'none', sm: 'inline-flex' } }} />
             <BrandLogo size="small" sx={{ display: { xs: 'inline-flex', sm: 'none' } }} />
+            <Box sx={{ display: { xs: 'none', md: 'block' }, ml: -2 }}>
+              <LocationPicker autoDetect />
+            </Box>
 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.25, flexShrink: 0, ml: { xs: 'auto', md: 0 }, order: { xs: 1, md: 3 } }}>
               <IconButton component={Link} to="/wishlist" aria-label="Wishlist" sx={{ ...iconBtnSx, display: { xs: 'none', sm: 'inline-flex' } }}>
@@ -120,6 +124,10 @@ export default function CustomerLayout() {
             </Paper>
           </Toolbar>
         </Container>
+
+        <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+          <LocationPicker variant="bar" />
+        </Box>
 
         {categories.length > 0 && (
           <Box sx={{ borderTop: '1px solid', borderColor: 'divider', display: { xs: 'none', md: 'block' } }}>
