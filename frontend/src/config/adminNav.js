@@ -1,6 +1,8 @@
 import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
 import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded';
 import SpeedRoundedIcon from '@mui/icons-material/SpeedRounded';
+import BoltRoundedIcon from '@mui/icons-material/BoltRounded';
+import AddLocationAltRoundedIcon from '@mui/icons-material/AddLocationAltRounded';
 import PeopleAltRoundedIcon from '@mui/icons-material/PeopleAltRounded';
 import Inventory2RoundedIcon from '@mui/icons-material/Inventory2Rounded';
 import CategoryRoundedIcon from '@mui/icons-material/CategoryRounded';
@@ -50,6 +52,13 @@ export const ADMIN_NAV = [
       { label: 'Categories', icon: CategoryRoundedIcon, to: '/categories', permission: 'categories.view' },
       { label: 'Brands', icon: LocalOfferRoundedIcon, to: '/brands', permission: 'brands.view' },
       { label: 'Attributes', icon: TuneRoundedIcon, to: '/attributes', permission: 'attributes.view' },
+    ],
+  },
+  {
+    section: 'Home Demo',
+    items: [
+      { label: 'Demo Bookings', icon: BoltRoundedIcon, to: '/home-demo/bookings', permission: 'orders.view' },
+      { label: 'Demo Locations', icon: AddLocationAltRoundedIcon, to: '/home-demo/locations', permission: 'orders.view' },
     ],
   },
   {

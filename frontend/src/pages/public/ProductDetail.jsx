@@ -16,6 +16,7 @@ import SectionHeader from '../../components/SectionHeader';
 import ProductCard from '../../components/ProductCard';
 import Product360Viewer from '../../components/Product360Viewer';
 import ProductImage from '../../components/ProductImage';
+import HomeDemoPanel from '../../components/homeDemo/HomeDemoPanel';
 import { realImage } from '../../utils/images';
 import { getProductBySlug, listProducts } from '../../services/product.service';
 import { addToCart } from '../../services/cart.service';
@@ -194,6 +195,8 @@ export default function ProductDetail() {
             </IconButton>
           </Box>
           <Snackbar open={Boolean(cartMessage)} autoHideDuration={2500} onClose={() => setCartMessage('')} message={cartMessage} />
+          <HomeDemoPanel product={product} variant={selectedVariant} />
+          <Box sx={{ mb: 2.5 }} />
 
           <Divider />
           <Grid container spacing={2} sx={{ my: 1 }}>

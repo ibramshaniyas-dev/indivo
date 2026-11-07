@@ -25,6 +25,7 @@ const adminSettingsRoutes = require('./admin/settings.routes');
 const adminAnalyticsRoutes = require('./admin/analytics.routes');
 const adminCommissionRoutes = require('./admin/commission.routes');
 const adminGrowthRoutes = require('./admin/growth.routes');
+const homeDemoRoutes = require('./homeDemo.routes');
 
 const router = express.Router();
 
@@ -53,6 +54,8 @@ router.use('/settings', settingsRoutes);
 router.use('/admin/settings', adminSettingsRoutes);
 router.use('/admin/analytics', adminAnalyticsRoutes);
 router.use('/admin/commission', adminCommissionRoutes);
+router.use('/admin/home-demo', homeDemoRoutes.adminRouter);
+router.use('/home-demo', homeDemoRoutes.publicRouter);
 router.use('/admin', adminGrowthRoutes);
 
 // Phase 1 (remaining): returns/refunds admin flow.

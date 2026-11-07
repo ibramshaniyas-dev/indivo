@@ -2,6 +2,7 @@ import { Box, Container, Typography, Paper, List, ListItemButton, ListItemIcon, 
 import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
 import LocationOnRoundedIcon from '@mui/icons-material/LocationOnRounded';
 import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded';
+import BoltRoundedIcon from '@mui/icons-material/BoltRounded';
 import FavoriteBorderRoundedIcon from '@mui/icons-material/FavoriteBorderRounded';
 import RateReviewRoundedIcon from '@mui/icons-material/RateReviewRounded';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
@@ -14,6 +15,7 @@ import { logout } from '../../services/auth.service';
 
 const LINKS = [
   { label: 'My Orders', icon: ReceiptLongRoundedIcon, to: '/account/orders' },
+  { label: 'My Home Demos', icon: BoltRoundedIcon, to: '/account/home-demos' },
   { label: 'Addresses', icon: LocationOnRoundedIcon, to: '/account/addresses' },
   { label: 'Wishlist', icon: FavoriteBorderRoundedIcon, to: '/wishlist' },
   { label: 'My Reviews', icon: RateReviewRoundedIcon, to: '/account/reviews' },

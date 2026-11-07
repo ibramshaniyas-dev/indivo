@@ -15,6 +15,7 @@ import RampSlide from '../../components/RampSlide';
 import HangingRail from '../../components/HangingRail';
 import CategoryShowcase from '../../components/CategoryShowcase';
 import Marquee from '../../components/Marquee';
+import HomeDemoShelf from '../../components/homeDemo/HomeDemoShelf';
 import Reveal from '../../components/Reveal';
 
 const TICKER = ['Pure Silk', 'Handloom Cotton', 'Royal Oud', 'Embroidered Juttis', 'Linen', 'Attar', 'Verified Sellers', 'Pan-India Delivery'];
@@ -111,6 +112,8 @@ export default function Home() {
       </Box>
 
       <Marquee items={TICKER} />
+
+      <HomeDemoShelf wishlistIds={wishlistIds} onToggleWishlist={toggle} />
 
       <Reveal><RampSlide products={trending} loading={loading} /></Reveal>
 

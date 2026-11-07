@@ -7,12 +7,15 @@ import { Link } from 'react-router-dom';
 import RatingStars from './RatingStars';
 import PriceTag from './PriceTag';
 import ProductImage from './ProductImage';
+import BoltRoundedIcon from '@mui/icons-material/BoltRounded';
+import useHomeDemo from '../hooks/useHomeDemo';
 
 export default function ProductCard({ product, wishlisted = false, onToggleWishlist, onAddToCart, onQuickView }) {
   const {
     slug, name, image, brandName, sellerName, rating, reviewCount, mrp, price, stockStatus,
   } = product;
   const outOfStock = stockStatus === 'OUT_OF_STOCK';
+  const homeDemo = useHomeDemo();
   const discount = mrp && price && Number(mrp) > Number(price) ? Math.round(((mrp - price) / mrp) * 100) : 0;
 
   const floatBtnSx = {
@@ -33,6 +36,14 @@ export default function ProductCard({ product, wishlisted = false, onToggleWishl
           <ProductImage src={image} alt={name} ratio="4 / 5" sx={{ '& img': { transition: 'transform 0.5s ease' } }} />
         </Box>
 
+        {homeDemo.productIds.has(product.id) && (
+          <Chip
+            icon={<BoltRoundedIcon />}
+            label={`Home demo · ${homeDemo.zone?.slaMinutes || 60} min`}
+            size="small"
+            sx={{ position: 'absolute', bottom: 10, left: 10, height: 22, fontSize: '0.62rem', fontWeight: 700, bgcolor: '#fff', color: 'secondary.dark', border: '1px solid rgba(168,106,0,0.45)', '& .MuiChip-icon': { fontSize: 14, color: 'secondary.dark' }, zIndex: 2 }}
+          />
+        )}
         {discount >= 5 && !outOfStock && (
           <Chip
             label={`${discount}% OFF`} size="small"
