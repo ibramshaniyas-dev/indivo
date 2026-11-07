@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { Box, Typography } from '@mui/material';
 import { getCategoryIcon } from './CategoryIcon';
 import { realImage, responsiveImage } from '../utils/images';
@@ -17,16 +17,29 @@ export default function ProductImage({
   sizes = '(max-width: 600px) 50vw, (max-width: 1200px) 33vw, 320px',
 }) {
   const url = realImage(src);
-  const [failed, setFailed] = useState(false);
-  const [useFallback, setUseFallback] = useState(false);
-  const [loaded, setLoaded] = useState(false);
-  useEffect(() => { setFailed(false); setUseFallback(false); setLoaded(false); }, [url]);
-  const showImage = url && !failed;
+  // Load/error state is keyed by URL (no reset effect): a reset that runs after a cached image
+  // has already fired `load` would otherwise leave the photo stuck behind the blur preview.
+  const [loadedSrc, setLoadedSrc] = useState(null);
+  const [fallbackFor, setFallbackFor] = useState(null);
+  const [failedFor, setFailedFor] = useState(null);
+  const imgRef = useRef(null);
+
   const responsive = responsiveImage(url);
-  // If a WebP variant is missing, fall back once to the original JPEG before giving up.
-  const handleError = () => (responsive.fallback && !useFallback ? setUseFallback(true) : setFailed(true));
+  const useFallback = fallbackFor === url;
+  const failed = failedFor === url;
+  const showImage = url && !failed;
   const imgSrc = useFallback ? responsive.fallback : responsive.src;
   const imgSrcSet = useFallback ? undefined : responsive.srcSet;
+  const loaded = loadedSrc === imgSrc;
+
+  // If a WebP variant is missing, fall back once to the original JPEG before giving up.
+  const handleError = () => (responsive.fallback && !useFallback ? setFallbackFor(url) : setFailedFor(url));
+
+  // Cached images can finish before React attaches onLoad — detect that directly.
+  useLayoutEffect(() => {
+    const el = imgRef.current;
+    if (el && el.complete && el.naturalWidth > 0) setLoadedSrc(imgSrc);
+  }, [imgSrc]);
   const Icon = getCategoryIcon(`${kind || ''} ${alt || ''}`);
 
   return (
@@ -49,6 +62,8 @@ export default function ProductImage({
       {showImage ? (
         <Box
           component="img"
+          ref={imgRef}
+          key={imgSrc}
           src={imgSrc}
           srcSet={imgSrcSet}
           sizes={sizes}
@@ -56,11 +71,13 @@ export default function ProductImage({
           loading={eager ? 'eager' : 'lazy'}
           fetchpriority={eager ? 'high' : undefined}
           decoding="async"
-          onLoad={() => setLoaded(true)}
+          onLoad={() => setLoadedSrc(imgSrc)}
           onError={handleError}
           sx={{
-            position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: fit,
-            p: fit === 'contain' ? '5%' : 0, opacity: loaded ? 1 : 0, transition: 'opacity 0.25s ease',
+            // Always visible and above the blur preview, so the photo can never stay hidden;
+            // the preview is simply removed once the photo has loaded.
+            position: 'absolute', inset: 0, zIndex: 1, width: '100%', height: '100%', objectFit: fit,
+            p: fit === 'contain' ? '5%' : 0,
             ...imgSx,
           }}
         />
