@@ -5,6 +5,9 @@ import { getMySeller } from '../../services/seller.service';
 import * as sellerProductService from '../../services/sellerProduct.service';
 import BusinessDashboard from '../../components/analytics/BusinessDashboard';
 import { getSellerAnalytics } from '../../services/analytics.service';
+import { getMyGrowth } from '../../services/growth.service';
+import InsightsPanel from '../../components/growth/InsightsPanel';
+import Scorecard from '../../components/growth/Scorecard';
 
 const STATUS_MESSAGES = {
   DRAFT: { severity: 'info', text: 'Finish onboarding to submit your application for review.' },
@@ -27,6 +30,7 @@ function StatCard({ label, value }) {
 export default function SellerDashboard() {
   const [seller, setSeller] = useState(null);
   const [products, setProducts] = useState([]);
+  const [growth, setGrowth] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -40,6 +44,7 @@ export default function SellerDashboard() {
         }
         if (data.status === 'APPROVED') {
           sellerProductService.listMyProducts().then(setProducts);
+          getMyGrowth().then(setGrowth).catch(() => setGrowth({ insights: [], scorecard: null }));
         }
       })
       .finally(() => setLoading(false));
@@ -60,6 +65,8 @@ export default function SellerDashboard() {
 
       {seller.status === 'APPROVED' && (
         <>
+          <InsightsPanel insights={growth?.insights} loading={!growth} />
+          {growth?.scorecard && <Scorecard card={growth.scorecard} />}
           <Grid container spacing={2} sx={{ mb: 3 }}>
             <Grid item xs={6} sm={3}><StatCard label="Total Products" value={products.length} /></Grid>
             <Grid item xs={6} sm={3}><StatCard label="Live" value={active} /></Grid>

@@ -5,6 +5,8 @@ import { useLocation } from 'react-router-dom';
 import api from '../../services/api';
 import BusinessDashboard from '../../components/analytics/BusinessDashboard';
 import { getPlatformAnalytics } from '../../services/analytics.service';
+import { getAdminInsights } from '../../services/growth.service';
+import InsightsPanel from '../../components/growth/InsightsPanel';
 
 function StatCard({ label, value, loading }) {
   return (
@@ -26,6 +28,10 @@ export default function Dashboard() {
   const basePath = location.pathname.startsWith('/super-admin') ? '/super-admin' : '/admin';
   // Full business analytics need the reports.view permission (Super Admin and Finance roles).
   const canSeeAnalytics = Boolean(user?.isSuperAdmin || user?.permissions?.includes('reports.view'));
+  const [insights, setInsights] = useState(null);
+  useEffect(() => {
+    if (canSeeAnalytics) getAdminInsights().then(setInsights).catch(() => setInsights({ insights: [] }));
+  }, [canSeeAnalytics]);
 
   useEffect(() => {
     Promise.all([
@@ -59,6 +65,7 @@ export default function Dashboard() {
         {user?.isSuperAdmin ? 'Complete platform overview' : `Showing what's relevant to your role: ${user?.roles?.join(', ')}`}
       </Typography>
 
+      {canSeeAnalytics && <InsightsPanel insights={insights?.insights} loading={!insights} basePath={basePath} />}
       {canSeeAnalytics ? (
         <BusinessDashboard mode="admin" load={getPlatformAnalytics} ordersPath={`${basePath}/orders`} shipmentsPath={`${basePath}/shipments`} />
       ) : (

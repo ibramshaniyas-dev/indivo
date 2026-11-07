@@ -91,10 +91,10 @@ const CLOSED_RETURN = "'RETURNED','REFUNDED'";
  *  DELIVERED            → earned, ready for payout
  *  anything else        → in progress (not yet earned)
  */
-function stageOf(status) {
+function stageOf(status, settlementId) {
   if (status === 'CANCELLED') return 'CANCELLED';
   if (['RETURNED', 'REFUNDED'].includes(status)) return 'RETURNED';
-  if (status === 'DELIVERED') return 'EARNED';
+  if (status === 'DELIVERED') return settlementId ? 'PAID' : 'EARNED';
   return 'IN_PROGRESS';
 }
 
@@ -111,7 +111,8 @@ async function ledgerTotals({ sellerId, from, to }) {
             COALESCE(SUM(CASE WHEN so.status NOT IN ('CANCELLED',${CLOSED_RETURN}) THEN so.commission_amount END), 0) AS commission,
             COALESCE(SUM(CASE WHEN so.status NOT IN ('CANCELLED',${CLOSED_RETURN}) THEN so.seller_payable END), 0) AS payable,
             COALESCE(SUM(CASE WHEN so.status = 'DELIVERED' THEN so.commission_amount END), 0) AS earnedCommission,
-            COALESCE(SUM(CASE WHEN so.status = 'DELIVERED' THEN so.seller_payable END), 0) AS readyForPayout,
+            COALESCE(SUM(CASE WHEN so.status = 'DELIVERED' AND so.settlement_id IS NULL THEN so.seller_payable END), 0) AS readyForPayout,
+            COALESCE(SUM(CASE WHEN so.status = 'DELIVERED' AND so.settlement_id IS NOT NULL THEN so.seller_payable END), 0) AS paidOut,
             COALESCE(SUM(CASE WHEN so.status NOT IN ('DELIVERED','CANCELLED',${CLOSED_RETURN}) THEN so.seller_payable END), 0) AS inProgressPayable,
             COALESCE(SUM(CASE WHEN so.status NOT IN ('DELIVERED','CANCELLED',${CLOSED_RETURN}) THEN so.commission_amount END), 0) AS inProgressCommission
        FROM seller_orders so ${ledgerWhere({ sellerId, from, to })}`,
@@ -127,6 +128,7 @@ async function ledgerTotals({ sellerId, from, to }) {
     effectiveRate: sales > 0 ? commission / sales : 0,
     earnedCommission: Number(row.earnedCommission),
     readyForPayout: Number(row.readyForPayout),
+    paidOut: Number(row.paidOut),
     inProgressPayable: Number(row.inProgressPayable),
     inProgressCommission: Number(row.inProgressCommission),
   };
@@ -137,7 +139,7 @@ async function ledgerRows({ sellerId, from, to, page = 1, limit = 20 }) {
   const rows = await db.query(
     `SELECT so.id, so.order_id AS orderId, so.sub_order_number AS orderNumber, so.created_at AS createdAt, so.status,
             so.subtotal - so.discount AS sales, so.shipping_charge AS shipping, so.commission_amount AS commission,
-            so.seller_payable AS payable, o.payment_method AS paymentMethod, o.payment_status AS paymentStatus,
+            so.seller_payable AS payable, so.settlement_id AS settlementId, o.payment_method AS paymentMethod, o.payment_status AS paymentStatus,
             s.id AS sellerId, s.display_name AS sellerName
        FROM seller_orders so
        JOIN orders o ON o.id = so.order_id
@@ -155,7 +157,7 @@ async function ledgerRows({ sellerId, from, to, page = 1, limit = 20 }) {
       return {
         ...r, sales, commission, shipping: Number(r.shipping), payable: Number(r.payable),
         ratePercent: sales > 0 ? (commission / sales) * 100 : 0,
-        stage: stageOf(r.status),
+        stage: stageOf(r.status, r.settlementId),
       };
     }),
     total: Number(total),

@@ -6,6 +6,7 @@ import PercentRoundedIcon from '@mui/icons-material/PercentRounded';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { Link } from 'react-router-dom';
 import { getMyEarnings } from '../../services/commission.service';
+import { getMySettlements } from '../../services/growth.service';
 import { inr, fmtDate, rateLabel, RangeToggle, StageChip, Tile, SectionTitle, noCommission } from '../../components/commission/shared';
 
 /** Seller's commission rate, earnings summary and per-order commission statement. */
@@ -14,6 +15,9 @@ export default function SellerEarnings() {
   const [page, setPage] = useState(0);
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
+  const [payouts, setPayouts] = useState(null);
+
+  useEffect(() => { getMySettlements({ limit: 20 }).then(setPayouts).catch(() => setPayouts({ rows: [], totalPaid: 0 })); }, []);
 
   useEffect(() => {
     getMyEarnings({ range, page: page + 1, limit: 15 })
@@ -55,11 +59,12 @@ export default function SellerEarnings() {
           </Paper>
 
           <Grid container spacing={2} sx={{ mb: 2.5 }}>
-            <Grid item xs={6} md={2.4}><Tile label="Sales" value={inr(data.totals.sales)} hint={`${data.totals.orders} orders`} /></Grid>
-            <Grid item xs={6} md={2.4}><Tile label="Commission" value={inr(data.totals.commission)} hint={`${(data.totals.effectiveRate * 100).toFixed(1)}% of sales`} /></Grid>
-            <Grid item xs={6} md={2.4}><Tile label="Your earnings" value={inr(data.totals.payable)} hint="sales + shipping − commission" emphasis /></Grid>
-            <Grid item xs={6} md={2.4}><Tile label="Ready for payout" value={inr(data.totals.readyForPayout)} hint="delivered orders" /></Grid>
-            <Grid item xs={12} md={2.4}><Tile label="In progress" value={inr(data.totals.inProgressPayable)} hint="earned once delivered" /></Grid>
+            <Grid item xs={6} md={2}><Tile label="Sales" value={inr(data.totals.sales)} hint={`${data.totals.orders} orders`} /></Grid>
+            <Grid item xs={6} md={2}><Tile label="Commission" value={inr(data.totals.commission)} hint={`${(data.totals.effectiveRate * 100).toFixed(1)}% of sales`} /></Grid>
+            <Grid item xs={6} md={2}><Tile label="Your earnings" value={inr(data.totals.payable)} hint="sales + shipping − commission" emphasis /></Grid>
+            <Grid item xs={6} md={2}><Tile label="Paid out" value={inr(data.totals.paidOut)} hint="already in your bank" /></Grid>
+            <Grid item xs={6} md={2}><Tile label="Ready for payout" value={inr(data.totals.readyForPayout)} hint="delivered, being paid" /></Grid>
+            <Grid item xs={6} md={2}><Tile label="In progress" value={inr(data.totals.inProgressPayable)} hint="earned once delivered" /></Grid>
           </Grid>
 
           <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mb: 2.5, color: 'text.secondary' }}>
@@ -111,6 +116,39 @@ export default function SellerEarnings() {
             {data.ledger.total > data.ledger.limit && (
               <TablePagination component="div" count={data.ledger.total} page={page} rowsPerPage={data.ledger.limit} rowsPerPageOptions={[]} onPageChange={(e, p) => setPage(p)} />
             )}
+          </Paper>
+
+          <Paper sx={{ p: 2.5, mt: 2.5 }}>
+            <SectionTitle title="Payouts received" subtitle={payouts ? `${inr(payouts.totalPaid)} paid to your bank account in total` : ''} />
+            <Box sx={{ overflowX: 'auto' }}>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Paid on</TableCell>
+                    <TableCell>For orders from</TableCell>
+                    <TableCell align="right">Orders</TableCell>
+                    <TableCell align="right">Commission</TableCell>
+                    <TableCell align="right">Amount</TableCell>
+                    <TableCell>UTR / reference</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {payouts?.rows.map((p) => (
+                    <TableRow key={p.id} hover>
+                      <TableCell sx={{ whiteSpace: 'nowrap' }}>{fmtDate(p.paidAt)}</TableCell>
+                      <TableCell sx={{ whiteSpace: 'nowrap' }}>{fmtDate(p.periodStart)} – {fmtDate(p.periodEnd)}</TableCell>
+                      <TableCell align="right">{p.orders}</TableCell>
+                      <TableCell align="right">{inr(p.commission)}</TableCell>
+                      <TableCell align="right" sx={{ fontWeight: 700 }}>{inr(p.amount)}</TableCell>
+                      <TableCell sx={{ fontFamily: 'monospace' }}>{p.referenceNo}</TableCell>
+                    </TableRow>
+                  ))}
+                  {payouts && payouts.rows.length === 0 && (
+                    <TableRow><TableCell colSpan={6}><Typography variant="body2" color="text.secondary" sx={{ py: 2 }}>No payouts yet — delivered orders are paid out by the SEESHAA team.</Typography></TableCell></TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </Box>
           </Paper>
         </>
       )}

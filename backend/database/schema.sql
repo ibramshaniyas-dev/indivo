@@ -540,6 +540,7 @@ CREATE TABLE seller_orders (
   shipping_charge    DECIMAL(12,2) NOT NULL DEFAULT 0,
   commission_amount  DECIMAL(12,2) NOT NULL DEFAULT 0,
   seller_payable     DECIMAL(12,2) NOT NULL DEFAULT 0,
+  settlement_id      INT UNSIGNED NULL,
   status             ENUM('PLACED','CONFIRMED','PROCESSING','PACKED','SHIPPED','OUT_FOR_DELIVERY','DELIVERED','CANCELLED','RETURN_REQUESTED','RETURN_APPROVED','RETURNED','REFUND_REQUESTED','REFUNDED') NOT NULL DEFAULT 'PLACED',
   cancelled_reason   VARCHAR(255) NULL,
   created_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -548,6 +549,7 @@ CREATE TABLE seller_orders (
   KEY idx_seller_orders_order (order_id),
   KEY idx_seller_orders_seller (seller_id),
   KEY idx_seller_orders_status (status),
+  KEY idx_seller_orders_settlement (settlement_id),
   CONSTRAINT fk_seller_orders_order FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
   CONSTRAINT fk_seller_orders_seller FOREIGN KEY (seller_id) REFERENCES sellers(id) ON DELETE RESTRICT
 ) ENGINE=InnoDB;
@@ -848,6 +850,7 @@ CREATE TABLE seller_settlements (
   seller_id          INT UNSIGNED NOT NULL,
   period_start       DATE NOT NULL,
   period_end         DATE NOT NULL,
+  orders_count       INT NOT NULL DEFAULT 0,
   gross_sales        DECIMAL(14,2) NOT NULL DEFAULT 0,
   commission_amount  DECIMAL(14,2) NOT NULL DEFAULT 0,
   tax_amount         DECIMAL(14,2) NOT NULL DEFAULT 0,
@@ -858,6 +861,7 @@ CREATE TABLE seller_settlements (
   paid_at            DATETIME NULL,
   paid_by            INT UNSIGNED NULL,
   reference_no       VARCHAR(60) NULL,
+  notes              VARCHAR(255) NULL,
   created_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   KEY idx_seller_settlements_seller (seller_id),
   CONSTRAINT fk_seller_settlements_seller FOREIGN KEY (seller_id) REFERENCES sellers(id) ON DELETE CASCADE

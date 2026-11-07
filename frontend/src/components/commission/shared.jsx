@@ -3,6 +3,7 @@ import HourglassTopRoundedIcon from '@mui/icons-material/HourglassTopRounded';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import CancelRoundedIcon from '@mui/icons-material/CancelRounded';
 import KeyboardReturnRoundedIcon from '@mui/icons-material/KeyboardReturnRounded';
+import PaidRoundedIcon from '@mui/icons-material/PaidRounded';
 
 export const inr = (v) => `₹${Number(v || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
 export const fmtDate = (d) => new Date(String(d).replace(' ', 'T')).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -30,6 +31,7 @@ export function RangeToggle({ value, onChange }) {
 
 // Settlement stage — colour always paired with an icon and a text label.
 const STAGES = {
+  PAID: { label: 'Paid out', color: 'success', icon: <PaidRoundedIcon /> },
   EARNED: { label: 'Earned · ready for payout', color: 'success', icon: <CheckCircleRoundedIcon /> },
   IN_PROGRESS: { label: 'In progress', color: 'warning', icon: <HourglassTopRoundedIcon /> },
   CANCELLED: { label: 'Cancelled · no commission', color: 'default', icon: <CancelRoundedIcon /> },

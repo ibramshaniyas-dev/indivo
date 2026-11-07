@@ -1,5 +1,6 @@
 import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
 import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded';
+import SpeedRoundedIcon from '@mui/icons-material/SpeedRounded';
 import PeopleAltRoundedIcon from '@mui/icons-material/PeopleAltRounded';
 import Inventory2RoundedIcon from '@mui/icons-material/Inventory2Rounded';
 import CategoryRoundedIcon from '@mui/icons-material/CategoryRounded';
@@ -32,6 +33,7 @@ export const ADMIN_NAV = [
     section: 'Marketplace',
     items: [
       { label: 'Sellers', icon: StorefrontRoundedIcon, to: '/sellers', permission: 'sellers.view' },
+      { label: 'Seller Performance', icon: SpeedRoundedIcon, to: '/seller-performance', permission: 'sellers.view' },
     ],
   },
   {

@@ -49,6 +49,8 @@ const AdminSettings = lazy(() => import('./pages/admin/Settings'));
 const MyProfile = lazy(() => import('./pages/admin/Profile'));
 const AdminCommission = lazy(() => import('./pages/admin/Commission'));
 const SellerEarnings = lazy(() => import('./pages/seller/Earnings'));
+const AdminSettlements = lazy(() => import('./pages/admin/Settlements'));
+const AdminSellerPerformance = lazy(() => import('./pages/admin/SellerPerformance'));
 
 function adminRoutes() {
   return (
@@ -67,7 +69,8 @@ function adminRoutes() {
       <Route path="payments" element={<ProtectedRoute permission="payments.view"><ComingSoon title="Payments" /></ProtectedRoute>} />
       <Route path="refunds" element={<ProtectedRoute permission="refunds.view"><ComingSoon title="Refunds" /></ProtectedRoute>} />
       <Route path="commission" element={<ProtectedRoute permission="commission.view"><AdminCommission /></ProtectedRoute>} />
-      <Route path="settlements" element={<ProtectedRoute permission="settlements.view"><ComingSoon title="Settlements" /></ProtectedRoute>} />
+      <Route path="settlements" element={<ProtectedRoute permission="settlements.view"><AdminSettlements /></ProtectedRoute>} />
+      <Route path="seller-performance" element={<ProtectedRoute permission="sellers.view"><AdminSellerPerformance /></ProtectedRoute>} />
       <Route path="coupons" element={<ProtectedRoute permission="coupons.view"><ComingSoon title="Coupons" /></ProtectedRoute>} />
       <Route path="offers" element={<ProtectedRoute permission="offers.view"><ComingSoon title="Offers" /></ProtectedRoute>} />
       <Route path="reviews" element={<ProtectedRoute permission="reviews.view"><ComingSoon title="Reviews" /></ProtectedRoute>} />
