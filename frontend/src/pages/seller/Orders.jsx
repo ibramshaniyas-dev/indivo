@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Box, Typography, MenuItem, TextField } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import DataTable from '../../components/DataTable';
 import StatusBadge from '../../components/StatusBadge';
 import * as sellerOrderService from '../../services/sellerOrder.service';
@@ -13,7 +13,8 @@ function formatINR(value) {
 
 export default function SellerOrders() {
   const [orders, setOrders] = useState([]);
-  const [status, setStatus] = useState('');
+  const [searchParams] = useSearchParams();
+  const [status, setStatus] = useState(STATUS_FILTERS.includes(searchParams.get('status')) ? searchParams.get('status') : '');
   const [loading, setLoading] = useState(true);
 
   const load = async () => {

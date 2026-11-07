@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Box, Grid, Card, Typography, CircularProgress } from '@mui/material';
 import { useSelector } from 'react-redux';
+import { useLocation } from 'react-router-dom';
 import api from '../../services/api';
+import BusinessDashboard from '../../components/analytics/BusinessDashboard';
+import { getPlatformAnalytics } from '../../services/analytics.service';
 
 function StatCard({ label, value, loading }) {
   return (
@@ -19,6 +22,10 @@ function StatCard({ label, value, loading }) {
 export default function Dashboard() {
   const { user } = useSelector((state) => state.auth);
   const [stats, setStats] = useState(null);
+  const location = useLocation();
+  const basePath = location.pathname.startsWith('/super-admin') ? '/super-admin' : '/admin';
+  // Full business analytics need the reports.view permission (Super Admin and Finance roles).
+  const canSeeAnalytics = Boolean(user?.isSuperAdmin || user?.permissions?.includes('reports.view'));
 
   useEffect(() => {
     Promise.all([
@@ -52,22 +59,22 @@ export default function Dashboard() {
         {user?.isSuperAdmin ? 'Complete platform overview' : `Showing what's relevant to your role: ${user?.roles?.join(', ')}`}
       </Typography>
 
-      <Grid container spacing={2}>
-        {cards.map((c) => (
-          <Grid item xs={12} sm={6} md={3} key={c.label}>
-            <StatCard label={c.label} value={c.value} loading={!stats} />
-          </Grid>
-        ))}
-        {cards.length === 0 && (
-          <Grid item xs={12}>
-            <Typography color="text.secondary">No dashboard widgets are enabled for your role yet.</Typography>
-          </Grid>
-        )}
-      </Grid>
-
-      <Typography variant="body2" color="text.secondary" sx={{ mt: 4 }}>
-        Revenue, order, and commission analytics will appear here once the checkout and payments modules ship.
-      </Typography>
+      {canSeeAnalytics ? (
+        <BusinessDashboard mode="admin" load={getPlatformAnalytics} ordersPath={`${basePath}/orders`} shipmentsPath={`${basePath}/shipments`} />
+      ) : (
+        <Grid container spacing={2}>
+          {cards.map((c) => (
+            <Grid item xs={12} sm={6} md={3} key={c.label}>
+              <StatCard label={c.label} value={c.value} loading={!stats} />
+            </Grid>
+          ))}
+          {cards.length === 0 && (
+            <Grid item xs={12}>
+              <Typography color="text.secondary">No dashboard widgets are enabled for your role yet.</Typography>
+            </Grid>
+          )}
+        </Grid>
+      )}
     </Box>
   );
 }

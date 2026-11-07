@@ -22,6 +22,7 @@ const webhookRoutes = require('./webhook.routes');
 const paymentRoutes = require('./payment.routes');
 const settingsRoutes = require('./settings.routes');
 const adminSettingsRoutes = require('./admin/settings.routes');
+const adminAnalyticsRoutes = require('./admin/analytics.routes');
 
 const router = express.Router();
 
@@ -48,6 +49,7 @@ router.use('/webhooks', webhookRoutes);
 router.use('/payments', paymentRoutes);
 router.use('/settings', settingsRoutes);
 router.use('/admin/settings', adminSettingsRoutes);
+router.use('/admin/analytics', adminAnalyticsRoutes);
 
 // Phase 1 (remaining): returns/refunds admin flow.
 

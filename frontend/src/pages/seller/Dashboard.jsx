@@ -3,6 +3,8 @@ import { Box, Alert, Typography, CircularProgress, Grid, Card } from '@mui/mater
 import { useNavigate } from 'react-router-dom';
 import { getMySeller } from '../../services/seller.service';
 import * as sellerProductService from '../../services/sellerProduct.service';
+import BusinessDashboard from '../../components/analytics/BusinessDashboard';
+import { getSellerAnalytics } from '../../services/analytics.service';
 
 const STATUS_MESSAGES = {
   DRAFT: { severity: 'info', text: 'Finish onboarding to submit your application for review.' },
@@ -15,9 +17,9 @@ const STATUS_MESSAGES = {
 
 function StatCard({ label, value }) {
   return (
-    <Card sx={{ p: 2.5 }}>
+    <Card sx={{ p: 2 }}>
       <Typography variant="body2" color="text.secondary">{label}</Typography>
-      <Typography variant="h4" sx={{ mt: 0.5 }}>{value}</Typography>
+      <Typography sx={{ fontFamily: "'Jost', sans-serif", fontSize: '1.5rem', fontWeight: 600, mt: 0.25 }}>{value}</Typography>
     </Card>
   );
 }
@@ -57,17 +59,21 @@ export default function SellerDashboard() {
       {statusInfo && <Alert severity={statusInfo.severity} sx={{ mb: 3 }}>{statusInfo.text}</Alert>}
 
       {seller.status === 'APPROVED' && (
-        <Grid container spacing={2}>
-          <Grid item xs={6} sm={3}><StatCard label="Total Products" value={products.length} /></Grid>
-          <Grid item xs={6} sm={3}><StatCard label="Active" value={active} /></Grid>
-          <Grid item xs={6} sm={3}><StatCard label="Pending Review" value={pending} /></Grid>
-          <Grid item xs={6} sm={3}><StatCard label="Drafts" value={drafts} /></Grid>
-        </Grid>
+        <>
+          <Grid container spacing={2} sx={{ mb: 3 }}>
+            <Grid item xs={6} sm={3}><StatCard label="Total Products" value={products.length} /></Grid>
+            <Grid item xs={6} sm={3}><StatCard label="Live" value={active} /></Grid>
+            <Grid item xs={6} sm={3}><StatCard label="Pending Review" value={pending} /></Grid>
+            <Grid item xs={6} sm={3}><StatCard label="Drafts" value={drafts} /></Grid>
+          </Grid>
+          <BusinessDashboard
+            mode="seller"
+            load={getSellerAnalytics}
+            ordersPath="/seller/orders"
+            productsPath="/seller/products"
+          />
+        </>
       )}
-
-      <Typography variant="body2" color="text.secondary" sx={{ mt: 4 }}>
-        Order and earnings data will appear here once checkout is live.
-      </Typography>
     </Box>
   );
 }
