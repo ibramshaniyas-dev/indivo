@@ -13,6 +13,7 @@ import { getPaymentConfig, createPayment, verifyPayment } from '../../services/p
 import { openRazorpayCheckout } from '../../utils/razorpay';
 import { setCart, resetCart } from '../../store/slices/cartSlice';
 import useStoreSettings from '../../hooks/useStoreSettings';
+import { getSavedLocation, pickNearestAddress } from '../../utils/location';
 
 function formatINR(value) {
   return `₹${Number(value).toLocaleString('en-IN')}`;
@@ -52,8 +53,14 @@ export default function Checkout() {
     Promise.all([getCart(), listAddresses(), getPaymentConfig()]).then(([cartSummary, addresses, payConfig]) => {
       dispatch(setCart(cartSummary));
       setSavedAddresses(addresses);
-      const defaultAddr = addresses.find((a) => a.is_default) || addresses[0];
-      if (defaultAddr) setSelectedAddressId(defaultAddr.id);
+      // Pre-select like the header "Deliver to": the address picked there, else the saved address
+      // nearest to the shopper's current location, else their default.
+      const loc = getSavedLocation();
+      const gps = loc?.gps || (loc?.source === 'gps' ? loc : null);
+      const chosen = (loc?.source === 'address' && addresses.find((a) => a.id === loc.addressId))
+        || pickNearestAddress(addresses, gps)
+        || addresses.find((a) => a.is_default) || addresses[0];
+      if (chosen) setSelectedAddressId(chosen.id);
       setPaymentConfig(payConfig);
       setLoading(false);
     });
