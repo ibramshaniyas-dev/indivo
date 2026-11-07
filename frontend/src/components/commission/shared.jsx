@@ -7,7 +7,10 @@ import KeyboardReturnRoundedIcon from '@mui/icons-material/KeyboardReturnRounded
 export const inr = (v) => `₹${Number(v || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
 export const fmtDate = (d) => new Date(String(d).replace(' ', 'T')).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 
-export const rateLabel = (rate) => (rate.type === 'FIXED' ? `${inr(rate.value)} / order` : `${Number(rate.value)}%`);
+/** Cancelled/returned orders carry no commission or payout (excluded from every total too). */
+export const noCommission = (row) => row.stage === 'CANCELLED' || row.stage === 'RETURNED';
+
+export const rateLabel =(rate) => (rate.type === 'FIXED' ? `${inr(rate.value)} / order` : `${Number(rate.value)}%`);
 
 export const COMMISSION_RANGES = [
   { key: '7d', label: '7 days' },

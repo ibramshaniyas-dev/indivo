@@ -6,7 +6,7 @@ import PercentRoundedIcon from '@mui/icons-material/PercentRounded';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { Link } from 'react-router-dom';
 import { getMyEarnings } from '../../services/commission.service';
-import { inr, fmtDate, rateLabel, RangeToggle, StageChip, Tile, SectionTitle } from '../../components/commission/shared';
+import { inr, fmtDate, rateLabel, RangeToggle, StageChip, Tile, SectionTitle, noCommission } from '../../components/commission/shared';
 
 /** Seller's commission rate, earnings summary and per-order commission statement. */
 export default function SellerEarnings() {
@@ -95,8 +95,10 @@ export default function SellerEarnings() {
                       <TableCell>{r.paymentMethod === 'COD' ? 'COD' : 'Online'}</TableCell>
                       <TableCell align="right">{inr(r.sales)}</TableCell>
                       <TableCell align="right">{inr(r.shipping)}</TableCell>
-                      <TableCell align="right" sx={{ color: 'error.main' }}>− {inr(r.commission)} <Typography component="span" variant="caption" color="text.secondary">({r.ratePercent.toFixed(1)}%)</Typography></TableCell>
-                      <TableCell align="right" sx={{ fontWeight: 700 }}>{inr(r.payable)}</TableCell>
+                      <TableCell align="right" sx={{ color: noCommission(r) ? 'text.secondary' : 'error.main' }}>
+                        {noCommission(r) ? '—' : <>− {inr(r.commission)} <Typography component="span" variant="caption" color="text.secondary">({r.ratePercent.toFixed(1)}%)</Typography></>}
+                      </TableCell>
+                      <TableCell align="right" sx={{ fontWeight: 700 }}>{noCommission(r) ? '—' : inr(r.payable)}</TableCell>
                       <TableCell><StageChip stage={r.stage} /></TableCell>
                     </TableRow>
                   ))}

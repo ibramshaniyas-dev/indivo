@@ -10,7 +10,7 @@ import { useSelector } from 'react-redux';
 import {
   getCommissionOverview, getCommissionLedger, updateDefaultCommission, updateSellerCommission, resetSellerCommission,
 } from '../../services/commission.service';
-import { inr, fmtDate, rateLabel, RangeToggle, StageChip, Tile, SectionTitle } from '../../components/commission/shared';
+import { inr, fmtDate, rateLabel, RangeToggle, StageChip, Tile, SectionTitle, noCommission } from '../../components/commission/shared';
 
 function RateFields({ rate, onChange }) {
   return (
@@ -195,8 +195,8 @@ export default function Commission() {
                       <TableCell>{r.sellerName}</TableCell>
                       <TableCell align="right">{inr(r.sales)}</TableCell>
                       <TableCell align="right">{r.ratePercent.toFixed(1)}%</TableCell>
-                      <TableCell align="right" sx={{ fontWeight: 700 }}>{inr(r.commission)}</TableCell>
-                      <TableCell align="right">{inr(r.payable)}</TableCell>
+                      <TableCell align="right" sx={{ fontWeight: 700 }}>{noCommission(r) ? '—' : inr(r.commission)}</TableCell>
+                      <TableCell align="right">{noCommission(r) ? '—' : inr(r.payable)}</TableCell>
                       <TableCell><StageChip stage={r.stage} /></TableCell>
                     </TableRow>
                   ))}
