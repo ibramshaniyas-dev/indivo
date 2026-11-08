@@ -55,7 +55,7 @@ export default function ProductCard({ product, wishlisted = false, onToggleWishl
         {discount >= 5 && !outOfStock && (
           <Box
             sx={{
-              position: 'absolute', top: dense ? 6 : 10, left: dense ? 6 : 10, px: 0.75, py: 0.25, borderRadius: 1,
+              position: 'absolute', zIndex: 2, top: dense ? 6 : 10, left: dense ? 6 : 10, px: 0.75, py: 0.25, borderRadius: 1,
               bgcolor: OFFER_RED, color: '#fff', fontSize: dense ? '0.62rem' : '0.68rem', fontWeight: 800, letterSpacing: '0.02em', lineHeight: 1.4,
             }}
           >
@@ -71,7 +71,7 @@ export default function ProductCard({ product, wishlisted = false, onToggleWishl
           />
         )}
 
-        <Box sx={{ position: 'absolute', top: dense ? 4 : 8, right: dense ? 4 : 8, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+        <Box sx={{ position: 'absolute', zIndex: 2, top: dense ? 4 : 8, right: dense ? 4 : 8, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
           <IconButton size="small" aria-label={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'} onClick={() => onToggleWishlist?.(product)} sx={floatBtnSx}>
             {wishlisted ? <FavoriteRoundedIcon sx={{ fontSize: dense ? 16 : 20 }} color="error" /> : <FavoriteBorderRoundedIcon sx={{ fontSize: dense ? 16 : 20 }} />}
           </IconButton>
@@ -88,7 +88,7 @@ export default function ProductCard({ product, wishlisted = false, onToggleWishl
           <Chip
             label="Out of stock"
             size="small"
-            sx={{ position: 'absolute', bottom: 10, left: 10, bgcolor: 'rgba(255,255,255,0.95)', color: 'error.main', border: '1px solid', borderColor: 'error.light', fontWeight: 700 }}
+            sx={{ position: 'absolute', zIndex: 2, bottom: 10, left: 10, bgcolor: 'rgba(255,255,255,0.95)', color: 'error.main', border: '1px solid', borderColor: 'error.light', fontWeight: 700 }}
           />
         )}
       </Box>
