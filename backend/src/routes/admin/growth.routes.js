@@ -12,5 +12,6 @@ router.post('/settlements/:sellerId/pay', can('settlements', 'approve'), control
 
 router.get('/performance', can('sellers', 'view'), controller.sellerPerformance);
 router.get('/insights', can('reports', 'view'), controller.adminInsights);
+router.get('/search-insights', can('reports', 'view'), controller.searchInsights);
 
 module.exports = router;

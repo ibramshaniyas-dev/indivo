@@ -2,6 +2,7 @@ const db = require('../config/database');
 const settlements = require('../services/settlement.service');
 const performance = require('../services/performance.service');
 const insights = require('../services/insights.service');
+const searchAnalytics = require('../services/searchAnalytics.service');
 const ApiError = require('../utils/ApiError');
 const logger = require('../utils/logger');
 const { success } = require('../utils/response');
@@ -57,4 +58,10 @@ const mySettlements = wrap(async (req, res) => success(res, {
   data: await settlements.listSettlements({ sellerId: req.sellerId, page: Number(req.query.page) || 1, limit: Math.min(50, Number(req.query.limit) || 10) }),
 }));
 
-module.exports = { payoutsDue, settlementHistory, recordPayout, sellerPerformance, adminInsights, myGrowth, mySettlements };
+// Search analytics: 7 / 30 / 90 day windows.
+const searchInsights = wrap(async (req, res) => {
+  const d = [7, 30, 90].includes(Number(req.query.days)) ? Number(req.query.days) : 30;
+  return success(res, { data: await searchAnalytics.getInsights(d) });
+});
+
+module.exports = { payoutsDue, settlementHistory, recordPayout, sellerPerformance, adminInsights, searchInsights, myGrowth, mySettlements };

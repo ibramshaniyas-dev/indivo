@@ -23,6 +23,7 @@ import VpnKeyRoundedIcon from '@mui/icons-material/VpnKeyRounded';
 import NotificationsRoundedIcon from '@mui/icons-material/NotificationsRounded';
 import SettingsRoundedIcon from '@mui/icons-material/SettingsRounded';
 import HistoryRoundedIcon from '@mui/icons-material/HistoryRounded';
+import ManageSearchRoundedIcon from '@mui/icons-material/ManageSearchRounded';
 
 // `permission` is a `module.action` code — null means always visible to any authenticated admin.
 // A group with zero visible items is hidden entirely.
@@ -96,6 +97,7 @@ export const ADMIN_NAV = [
     section: 'Reports',
     items: [
       { label: 'Reports', icon: AssessmentRoundedIcon, to: '/reports', permission: 'reports.view' },
+      { label: 'Search Insights', icon: ManageSearchRoundedIcon, to: '/search-insights', permission: 'reports.view' },
     ],
   },
   {

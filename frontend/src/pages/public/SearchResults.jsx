@@ -21,6 +21,19 @@ import useWishlistToggle from '../../hooks/useWishlistToggle';
 import api from '../../services/api';
 
 const PAGE = 24;
+
+// Tells the admin search analytics which product a customer opened from which search.
+// sendBeacon survives the page navigation that the click triggers.
+function trackSearchClick(searchId, productId, position) {
+  if (!searchId) return;
+  const url = `${api.defaults.baseURL}/products/search-click`;
+  const body = JSON.stringify({ searchId, productId, position });
+  try {
+    if (!navigator.sendBeacon?.(url, new Blob([body], { type: 'application/json' }))) {
+      fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, keepalive: true }).catch(() => {});
+    }
+  } catch { /* analytics must never break shopping */ }
+}
 const DENSITY_KEY = 'seeshaa.searchDensity';
 const readDensity = () => { try { return localStorage.getItem(DENSITY_KEY) === '3' ? 3 : 2; } catch { return 2; } };
 
@@ -72,7 +85,7 @@ export default function SearchResults() {
     setLoading(true);
     if (window.scrollY > 400) window.scrollTo({ top: 0, behavior: 'smooth' });
     listProducts({ ...query, page: 1, limit: PAGE, facets: 1 })
-      .then((r) => { if (id === reqId.current) setRes({ items: r.data, total: r.meta.total, page: 1, facets: r.meta.facets }); })
+      .then((r) => { if (id === reqId.current) setRes({ items: r.data, total: r.meta.total, page: 1, facets: r.meta.facets, searchId: r.meta.searchId || null }); })
       .catch(() => { if (id === reqId.current) setRes({ items: [], total: 0, page: 0, facets: null }); })
       .finally(() => { if (id === reqId.current) setLoading(false); });
   }, [key]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -211,8 +224,10 @@ export default function SearchResults() {
             ) : (
               <>
                 <Box sx={{ display: 'grid', gridTemplateColumns: gridCols, gap: { xs: '8px', md: '14px' } }}>
-                  {res.items.map((p) => (
-                    <ProductCard key={p.id} product={p} dense wishlisted={wishlistIds.includes(p.id)} onToggleWishlist={() => toggle(p)} />
+                  {res.items.map((p, i) => (
+                    <Box key={p.id} sx={{ display: 'flex', '& > *': { flex: 1 } }} onClickCapture={(e) => { if (e.target.closest('a')) trackSearchClick(res.searchId, p.id, i + 1); }}>
+                      <ProductCard product={p} dense wishlisted={wishlistIds.includes(p.id)} onToggleWishlist={() => toggle(p)} />
+                    </Box>
                   ))}
                   {loadingMore && Array.from({ length: density === 3 ? 6 : 4 }).map((_, i) => <Skeleton key={`m${i}`} variant="rounded" sx={{ aspectRatio: '1 / 1.5', height: 'auto', borderRadius: 2 }} />)}
                 </Box>

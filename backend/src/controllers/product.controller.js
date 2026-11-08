@@ -5,6 +5,8 @@ const { success } = require('../utils/response');
 const slugify = require('../utils/slugify');
 const { publicUrlFor, relativePathFromFile } = require('../services/storage.service');
 const { createInventoryForVariant } = require('../services/inventory.service');
+const searchAnalytics = require('../services/searchAnalytics.service');
+const logger = require('../utils/logger');
 
 const CARD_SELECT = `
   SELECT p.id, p.public_id, p.name, p.slug, p.selling_price, p.mrp, p.status,
@@ -116,6 +118,18 @@ async function list(req, res, next) {
     );
 
     const meta = { page, limit, total: Number(total) };
+    // Log real customer searches: first page of a full result list only (not filter-count previews).
+    if (req.query.q && page === 1 && limit > 1 && req.query.track !== '0') {
+      try {
+        // Only an unfiltered search tells us how many products match the term itself.
+        const filtered = filters.some((f) => f.group && f.group !== 'q');
+        meta.searchId = await searchAnalytics.logSearch({
+          term: req.query.q, resultsCount: Number(total), visitor: searchAnalytics.visitorKey(req), updateResults: !filtered,
+        });
+      } catch (err) {
+        logger.warn(`search log failed: ${err.message}`);
+      }
+    }
     if (req.query.facets === '1') {
       const base = 'FROM products p JOIN sellers s ON s.id = p.seller_id';
       const [brands, categories, [price]] = await Promise.all([
@@ -434,4 +448,19 @@ async function submitForReview(req, res, next) {
   }
 }
 
-module.exports = { list, getBySlug, listMine, getMineById, create, update, addVariant, uploadImages, submitForReview };
+/** Public beacon: a customer opened a product from a search result list. Always 204 — never blocks the UI. */
+async function searchClick(req, res) {
+  const searchId = parseInt(req.body?.searchId, 10);
+  const productId = parseInt(req.body?.productId, 10);
+  const position = parseInt(req.body?.position, 10);
+  if (searchId > 0 && productId > 0) {
+    try {
+      await searchAnalytics.logClick({ searchId, productId, position });
+    } catch (err) {
+      logger.warn(`search click log failed: ${err.message}`);
+    }
+  }
+  return res.status(204).end();
+}
+
+module.exports = { searchClick, list, getBySlug, listMine, getMineById, create, update, addVariant, uploadImages, submitForReview };

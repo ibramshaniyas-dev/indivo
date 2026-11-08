@@ -51,6 +51,7 @@ const AdminCommission = lazy(() => import('./pages/admin/Commission'));
 const SellerEarnings = lazy(() => import('./pages/seller/Earnings'));
 const AdminSettlements = lazy(() => import('./pages/admin/Settlements'));
 const AdminSellerPerformance = lazy(() => import('./pages/admin/SellerPerformance'));
+const AdminSearchInsights = lazy(() => import('./pages/admin/SearchInsights'));
 const AdminDemoBookings = lazy(() => import('./pages/admin/DemoBookings'));
 const AdminDemoLocations = lazy(() => import('./pages/admin/DemoLocations'));
 const MyHomeDemos = lazy(() => import('./pages/public/MyHomeDemos'));
@@ -74,6 +75,7 @@ function adminRoutes() {
       <Route path="commission" element={<ProtectedRoute permission="commission.view"><AdminCommission /></ProtectedRoute>} />
       <Route path="settlements" element={<ProtectedRoute permission="settlements.view"><AdminSettlements /></ProtectedRoute>} />
       <Route path="seller-performance" element={<ProtectedRoute permission="sellers.view"><AdminSellerPerformance /></ProtectedRoute>} />
+      <Route path="search-insights" element={<ProtectedRoute permission="reports.view"><AdminSearchInsights /></ProtectedRoute>} />
       <Route path="home-demo/bookings" element={<ProtectedRoute permission="orders.view"><AdminDemoBookings /></ProtectedRoute>} />
       <Route path="home-demo/locations" element={<ProtectedRoute permission="orders.view"><AdminDemoLocations /></ProtectedRoute>} />
       <Route path="coupons" element={<ProtectedRoute permission="coupons.view"><ComingSoon title="Coupons" /></ProtectedRoute>} />
