@@ -55,7 +55,7 @@ export default function Home() {
       api.get('/categories', { params: { parentId: 'null' } }),
       api.get('/cms/banners').catch(() => ({ data: { data: [] } })),
       listProducts({ sort: 'discount', limit: 20 }),
-      listProducts({ sort: 'discount', maxPrice: 999, limit: 15 }),
+      listProducts({ sort: 'price_asc', maxPrice: 999, limit: 15 }),
       listProducts({ sort: 'rating', limit: 12 }),
       listProducts({ sort: 'newest', limit: 12 }),
     ])

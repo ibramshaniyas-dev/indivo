@@ -46,7 +46,7 @@ export default function ProductCard({ product, wishlisted = false, onToggleWishl
       <Box sx={{ position: 'relative' }}>
         <Box component={Link} to={`/product/${slug}`} aria-label={name} sx={{ display: 'block' }}>
           <ProductImage
-            src={image} alt={name} ratio={dense ? '1 / 1' : '4 / 5'} placeholderLabel={!dense}
+            src={image} alt={name} ratio={dense ? '1 / 1' : '4 / 5'} fit={dense ? 'cover' : undefined} placeholderLabel={!dense}
             sizes={dense ? '(max-width: 600px) 45vw, 200px' : undefined}
             sx={{ '& img': { transition: 'transform 0.5s ease' } }}
           />

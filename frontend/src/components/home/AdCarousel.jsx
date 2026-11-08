@@ -109,8 +109,8 @@ function Slide({ s, active, eager }) {
             <Box
               key={p.id}
               sx={{
-                position: 'absolute', width: { xs: mid ? 108 : 86, sm: mid ? 150 : 120, md: mid ? 210 : 170 },
-                transform: { xs: `translateX(${pos * 52}px) rotate(${pos * 7}deg)`, sm: `translateX(${pos * 88}px) rotate(${pos * 7}deg)`, md: `translateX(${pos * 150}px) rotate(${pos * 6}deg)` },
+                position: 'absolute', width: { xs: mid ? 100 : 72, sm: mid ? 150 : 120, md: mid ? 210 : 170 },
+                transform: { xs: `translateX(${pos * 40}px) rotate(${pos * 7}deg)`, sm: `translateX(${pos * 88}px) rotate(${pos * 7}deg)`, md: `translateX(${pos * 150}px) rotate(${pos * 6}deg)` },
                 zIndex: mid ? 2 : 1, bgcolor: '#fff', p: { xs: 0.5, md: 0.75 }, borderRadius: 2, boxShadow: '0 14px 30px rgba(0,0,0,0.35)',
               }}
             >
