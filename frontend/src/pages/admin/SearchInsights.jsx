@@ -17,7 +17,7 @@ const AXIS_TEXT = '#6F6551';
 const pct = (v) => `${Math.round((v || 0) * 100)}%`;
 const num = (v) => Number(v || 0).toLocaleString('en-IN');
 const storeUrl = (path) => `${window.location.origin.replace('://admin.', '://')}${path}`;
-const plural = (n, word) => `${num(n)} ${word}${n === 1 ? '' : 's'}`;
+const plural = (n, word, many = `${word}s`) => `${num(n)} ${n === 1 ? word : many}`;
 const ago = (mins) => {
   if (mins == null) return '—';
   if (mins < 1) return 'just now';
@@ -157,7 +157,7 @@ export default function SearchInsights() {
         </Grid>
         <Grid item xs={6} md={3}><Tile label="Different search terms" value={s ? num(s.uniqueTerms) : '…'} hint={s ? `${plural(s.visitors, "visitor")} searched` : ''} /></Grid>
         <Grid item xs={6} md={3}>
-          <Tile label="Searches with no results" value={s ? pct(s.zeroResultRate) : '…'} hint={s ? `${plural(s.zeroResultSearches, "search")} found nothing` : ''} emphasis={s?.zeroResultRate > 0.15} />
+          <Tile label="Searches with no results" value={s ? pct(s.zeroResultRate) : '…'} hint={s ? `${plural(s.zeroResultSearches, "search", "searches")} found nothing` : ''} emphasis={s?.zeroResultRate > 0.15} />
         </Grid>
         <Grid item xs={6} md={3}><Tile label="Search → product opened" value={s ? pct(s.clickThroughRate) : '…'} hint={s ? plural(s.productClicks, "product open") : ''} /></Grid>
       </Grid>
