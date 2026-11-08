@@ -36,40 +36,65 @@ function toCard(row) {
   };
 }
 
+/** "3,7,x" → [3, 7]: positive integer ids from a comma-separated query value. */
+function idList(value) {
+  if (!value) return [];
+  return String(value).split(',').map((v) => parseInt(v, 10)).filter((n) => Number.isInteger(n) && n > 0).slice(0, 50);
+}
+
 async function list(req, res, next) {
   try {
     const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
     const limit = Math.min(parseInt(req.query.limit, 10) || 24, 60);
     const offset = (page - 1) * limit;
 
-    const conditions = ["p.status = 'ACTIVE'", "s.status = 'APPROVED'"];
+    // Each filter is tagged with its facet group so facet counts can ignore their own group
+    // (e.g. brand counts reflect every active filter except the brand selection itself).
+    const filters = [{ sql: "p.status = 'ACTIVE'" }, { sql: "s.status = 'APPROVED'" }];
     const params = {};
+    const add = (group, sql) => filters.push({ group, sql });
 
     if (req.query.q) {
-      conditions.push('(p.name LIKE :q OR p.description LIKE :q)');
+      add('q', '(p.name LIKE :q OR p.description LIKE :q)');
       params.q = `%${req.query.q}%`;
     }
-    if (req.query.category) {
+    const categoryIds = idList(req.query.category);
+    if (categoryIds.length) {
       // A category includes its sub-categories (e.g. Fashion → Men's / Women's / Kids Fashion).
-      conditions.push('(p.category_id = :categoryId OR p.category_id IN (SELECT c.id FROM categories c WHERE c.parent_id = :categoryId))');
-      params.categoryId = req.query.category;
+      add('category', '(p.category_id IN (:categoryIds) OR p.category_id IN (SELECT c.id FROM categories c WHERE c.parent_id IN (:categoryIds)))');
+      params.categoryIds = categoryIds;
     }
-    if (req.query.brand) {
-      conditions.push('p.brand_id = :brandId');
-      params.brandId = req.query.brand;
+    const brandIds = idList(req.query.brand);
+    if (brandIds.length) {
+      add('brand', 'p.brand_id IN (:brandIds)');
+      params.brandIds = brandIds;
     }
     if (req.query.seller) {
-      conditions.push('p.seller_id = :sellerId');
+      add('seller', 'p.seller_id = :sellerId');
       params.sellerId = req.query.seller;
     }
-    if (req.query.minPrice) {
-      conditions.push('p.selling_price >= :minPrice');
-      params.minPrice = req.query.minPrice;
+    if (Number(req.query.minPrice) > 0) {
+      add('price', 'p.selling_price >= :minPrice');
+      params.minPrice = Number(req.query.minPrice);
     }
-    if (req.query.maxPrice) {
-      conditions.push('p.selling_price <= :maxPrice');
-      params.maxPrice = req.query.maxPrice;
+    if (Number(req.query.maxPrice) > 0) {
+      add('price', 'p.selling_price <= :maxPrice');
+      params.maxPrice = Number(req.query.maxPrice);
     }
+    if (Number(req.query.minDiscount) > 0) {
+      add('discount', '(p.mrp - p.selling_price) * 100 >= :minDiscount * p.mrp');
+      params.minDiscount = Math.min(Number(req.query.minDiscount), 95);
+    }
+    if (Number(req.query.minRating) > 0) {
+      add('rating', "(SELECT AVG(r.rating) FROM reviews r WHERE r.product_id = p.id AND r.status = 'APPROVED') >= :minRating");
+      params.minRating = Math.min(Number(req.query.minRating), 5);
+    }
+    if (req.query.inStock === '1' || req.query.inStock === 'true') {
+      add('stock', `(SELECT COALESCE(SUM(i.available_stock - i.reserved_stock), 0)
+                       FROM inventories i JOIN product_variants v ON v.id = i.product_variant_id WHERE v.product_id = p.id) > 0`);
+    }
+    const whereExcept = (group) => `WHERE ${filters.filter((f) => !group || f.group !== group).map((f) => f.sql).join(' AND ')}`;
+    const conditions = filters.map((f) => f.sql);
 
     const sortMap = {
       price_asc: 'p.selling_price ASC',
@@ -90,7 +115,25 @@ async function list(req, res, next) {
       params
     );
 
-    return success(res, { data: products.map(toCard), meta: { page, limit, total: Number(total) } });
+    const meta = { page, limit, total: Number(total) };
+    if (req.query.facets === '1') {
+      const base = 'FROM products p JOIN sellers s ON s.id = p.seller_id';
+      const [brands, categories, [price]] = await Promise.all([
+        db.query(
+          `SELECT b.id, b.name, COUNT(*) AS count ${base} JOIN brands b ON b.id = p.brand_id ${whereExcept('brand')}
+           GROUP BY b.id, b.name ORDER BY count DESC, b.name ASC`, params
+        ),
+        db.query(`SELECT p.category_id AS id, COUNT(*) AS count ${base} ${whereExcept('category')} GROUP BY p.category_id`, params),
+        db.query(`SELECT MIN(p.selling_price) AS min, MAX(p.selling_price) AS max ${base} ${whereExcept('price')}`, params),
+      ]);
+      meta.facets = {
+        brands: brands.map((b) => ({ id: b.id, name: b.name, count: Number(b.count) })),
+        categories: categories.map((c) => ({ id: c.id, count: Number(c.count) })),
+        price: { min: Number(price?.min) || 0, max: Number(price?.max) || 0 },
+      };
+    }
+
+    return success(res, { data: products.map(toCard), meta });
   } catch (err) {
     return next(err);
   }
