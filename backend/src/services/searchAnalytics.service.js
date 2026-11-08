@@ -74,6 +74,7 @@ async function getInsights(days) {
     db.query(
       `SELECT l.term_norm AS term, COUNT(*) AS searches, COUNT(DISTINCT l.visitor_key) AS visitors,
               ROUND(AVG(l.results_count)) AS avgResults, MAX(l.created_at) AS lastSearched,
+              TIMESTAMPDIFF(MINUTE, MAX(l.created_at), NOW()) AS minutesAgo,
               COALESCE(SUM(cc.clicks), 0) AS clicks, SUM(cc.clicks > 0) AS clickedSearches
          FROM search_logs l
          LEFT JOIN (SELECT search_log_id, COUNT(*) AS clicks FROM search_clicks GROUP BY search_log_id) cc ON cc.search_log_id = l.id
@@ -81,7 +82,8 @@ async function getInsights(days) {
         GROUP BY l.term_norm ORDER BY searches DESC, lastSearched DESC LIMIT 30`, range
     ),
     db.query(
-      `SELECT term_norm AS term, COUNT(*) AS searches, COUNT(DISTINCT visitor_key) AS visitors, MAX(created_at) AS lastSearched
+      `SELECT term_norm AS term, COUNT(*) AS searches, COUNT(DISTINCT visitor_key) AS visitors, MAX(created_at) AS lastSearched,
+              TIMESTAMPDIFF(MINUTE, MAX(created_at), NOW()) AS minutesAgo
          FROM search_logs WHERE created_at >= ${from} AND results_count = 0
         GROUP BY term_norm ORDER BY searches DESC, lastSearched DESC LIMIT 20`, range
     ),
@@ -133,8 +135,11 @@ async function getInsights(days) {
       clicks: Number(t.clicks) || 0,
       clickThroughRate: Number(t.searches) ? (Number(t.clickedSearches) || 0) / Number(t.searches) : 0,
       lastSearched: t.lastSearched,
+      minutesAgo: Number(t.minutesAgo) || 0, // computed by the DB, so it is timezone-safe
     })),
-    zeroResultTerms: zeroTerms.map((t) => ({ term: t.term, searches: Number(t.searches), visitors: Number(t.visitors), lastSearched: t.lastSearched })),
+    zeroResultTerms: zeroTerms.map((t) => ({
+      term: t.term, searches: Number(t.searches), visitors: Number(t.visitors), lastSearched: t.lastSearched, minutesAgo: Number(t.minutesAgo) || 0,
+    })),
     topProducts: topProducts.map((p) => ({
       id: p.id, name: p.name, slug: p.slug, image: p.image, sellerName: p.sellerName,
       price: Number(p.price), mrp: Number(p.mrp), clicks: Number(p.clicks), avgPosition: Number(p.avgPosition) || null,

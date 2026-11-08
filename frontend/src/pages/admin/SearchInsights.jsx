@@ -17,10 +17,11 @@ const AXIS_TEXT = '#6F6551';
 const pct = (v) => `${Math.round((v || 0) * 100)}%`;
 const num = (v) => Number(v || 0).toLocaleString('en-IN');
 const storeUrl = (path) => `${window.location.origin.replace('://admin.', '://')}${path}`;
-const ago = (ts) => {
-  if (!ts) return '—';
-  const mins = Math.round((Date.now() - new Date(String(ts).replace(' ', 'T')).getTime()) / 60000);
-  if (mins < 60) return `${Math.max(1, mins)}m ago`;
+const plural = (n, word) => `${num(n)} ${word}${n === 1 ? '' : 's'}`;
+const ago = (mins) => {
+  if (mins == null) return '—';
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
   if (mins < 1440) return `${Math.round(mins / 60)}h ago`;
   return `${Math.round(mins / 1440)}d ago`;
 };
@@ -116,7 +117,7 @@ function buildTips(d) {
   const weak = d.topTerms.find((t) => t.searches >= 3 && t.avgResults > 0 && t.clickThroughRate < 0.2);
   if (weak) tips.push(`“${weak.term}” finds products but only ${pct(weak.clickThroughRate)} of searchers open one — check photos, prices and titles for this term.`);
   const star = d.topProducts[0];
-  if (star) tips.push(`“${star.name}” is the most-opened product from search (${star.clicks} opens) — keep it well stocked and feature it on the homepage.`);
+  if (star) tips.push(`“${star.name}” is the most-opened product from search (${plural(star.clicks, "open")}) — keep it well stocked and feature it on the homepage.`);
   if (d.summary.zeroResultRate > 0.15) tips.push(`${pct(d.summary.zeroResultRate)} of searches find nothing — the catalogue is missing things customers want.`);
   return tips;
 }
@@ -152,13 +153,13 @@ export default function SearchInsights() {
 
       <Grid container spacing={2} sx={{ mb: 2.5 }}>
         <Grid item xs={6} md={3}>
-          <Tile label="Total searches" value={s ? num(s.searches) : '…'} hint={s ? (change == null ? `${num(s.visitors)} visitors` : `${change >= 0 ? '▲' : '▼'} ${Math.abs(change)}% vs previous ${days} days`) : ''} />
+          <Tile label="Total searches" value={s ? num(s.searches) : '…'} hint={s ? (change == null ? plural(s.visitors, "visitor") : `${change >= 0 ? '▲' : '▼'} ${Math.abs(change)}% vs previous ${days} days`) : ''} />
         </Grid>
-        <Grid item xs={6} md={3}><Tile label="Different search terms" value={s ? num(s.uniqueTerms) : '…'} hint={s ? `${num(s.visitors)} visitors searched` : ''} /></Grid>
+        <Grid item xs={6} md={3}><Tile label="Different search terms" value={s ? num(s.uniqueTerms) : '…'} hint={s ? `${plural(s.visitors, "visitor")} searched` : ''} /></Grid>
         <Grid item xs={6} md={3}>
-          <Tile label="Searches with no results" value={s ? pct(s.zeroResultRate) : '…'} hint={s ? `${num(s.zeroResultSearches)} searches found nothing` : ''} emphasis={s?.zeroResultRate > 0.15} />
+          <Tile label="Searches with no results" value={s ? pct(s.zeroResultRate) : '…'} hint={s ? `${plural(s.zeroResultSearches, "search")} found nothing` : ''} emphasis={s?.zeroResultRate > 0.15} />
         </Grid>
-        <Grid item xs={6} md={3}><Tile label="Search → product opened" value={s ? pct(s.clickThroughRate) : '…'} hint={s ? `${num(s.productClicks)} product opens` : ''} /></Grid>
+        <Grid item xs={6} md={3}><Tile label="Search → product opened" value={s ? pct(s.clickThroughRate) : '…'} hint={s ? plural(s.productClicks, "product open") : ''} /></Grid>
       </Grid>
 
       {tips.length > 0 && (
@@ -205,7 +206,7 @@ export default function SearchInsights() {
                           <Box component="a" href={storeUrl(`/search?q=${encodeURIComponent(t.term)}`)} target="_blank" rel="noopener noreferrer" sx={{ color: 'text.primary', fontWeight: 600, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 0.5, '&:hover': { color: 'primary.main' } }}>
                             {t.term}<OpenInNewRoundedIcon sx={{ fontSize: 13, opacity: 0.5 }} />
                           </Box>
-                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>{num(t.visitors)} visitor{t.visitors === 1 ? '' : 's'}</Typography>
+                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>{plural(t.visitors, 'visitor')}</Typography>
                         </TableCell>
                         <TableCell>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -219,9 +220,9 @@ export default function SearchInsights() {
                           {t.avgResults === 0 ? <Chip size="small" label="None" color="error" variant="outlined" sx={{ height: 20 }} /> : num(t.avgResults)}
                         </TableCell>
                         <TableCell align="right">
-                          <Tooltip title={`${num(t.clicks)} product opens`}><span>{pct(t.clickThroughRate)}</span></Tooltip>
+                          <Tooltip title={plural(t.clicks, "product open")}><span>{pct(t.clickThroughRate)}</span></Tooltip>
                         </TableCell>
-                        <TableCell align="right" sx={{ color: 'text.secondary', whiteSpace: 'nowrap' }}>{ago(t.lastSearched)}</TableCell>
+                        <TableCell align="right" sx={{ color: 'text.secondary', whiteSpace: 'nowrap' }}>{ago(t.minutesAgo)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -255,7 +256,7 @@ export default function SearchInsights() {
                     </Box>
                     <Box sx={{ textAlign: 'right', flexShrink: 0 }}>
                       <Typography sx={{ fontWeight: 700 }}>{num(p.clicks)}</Typography>
-                      <Typography variant="caption" color="text.secondary">opens</Typography>
+                      <Typography variant="caption" color="text.secondary">{p.clicks === 1 ? 'open' : 'opens'}</Typography>
                     </Box>
                   </Box>
                 ))}
@@ -276,7 +277,7 @@ export default function SearchInsights() {
                     <SearchOffRoundedIcon sx={{ color: '#C62828', fontSize: 20 }} />
                     <Box sx={{ flex: 1, minWidth: 0 }}>
                       <Typography noWrap sx={{ fontWeight: 600, fontSize: '0.88rem' }}>{t.term}</Typography>
-                      <Typography variant="caption" color="text.secondary">{num(t.visitors)} visitor{t.visitors === 1 ? '' : 's'} · {ago(t.lastSearched)}</Typography>
+                      <Typography variant="caption" color="text.secondary">{plural(t.visitors, 'visitor')} · {ago(t.minutesAgo)}</Typography>
                     </Box>
                     <Typography sx={{ fontWeight: 700 }}>{num(t.searches)}×</Typography>
                   </Box>
