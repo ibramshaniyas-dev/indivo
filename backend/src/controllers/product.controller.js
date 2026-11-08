@@ -50,7 +50,8 @@ async function list(req, res, next) {
       params.q = `%${req.query.q}%`;
     }
     if (req.query.category) {
-      conditions.push('p.category_id = :categoryId');
+      // A category includes its sub-categories (e.g. Fashion → Men's / Women's / Kids Fashion).
+      conditions.push('(p.category_id = :categoryId OR p.category_id IN (SELECT c.id FROM categories c WHERE c.parent_id = :categoryId))');
       params.categoryId = req.query.category;
     }
     if (req.query.brand) {
@@ -75,6 +76,7 @@ async function list(req, res, next) {
       price_desc: 'p.selling_price DESC',
       newest: 'p.created_at DESC',
       rating: 'rating DESC',
+      discount: '(p.mrp - p.selling_price) / NULLIF(p.mrp, 0) DESC, p.created_at DESC',
     };
     const orderBy = sortMap[req.query.sort] || 'p.is_featured DESC, p.created_at DESC';
 

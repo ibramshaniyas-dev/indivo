@@ -15,6 +15,7 @@ import api from '../../services/api';
 
 const SORT_OPTIONS = [
   { value: '', label: 'Relevance' },
+  { value: 'discount', label: 'Biggest Discount' },
   { value: 'newest', label: 'Newest' },
   { value: 'price_asc', label: 'Price: Low to High' },
   { value: 'price_desc', label: 'Price: High to Low' },
