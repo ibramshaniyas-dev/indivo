@@ -110,7 +110,7 @@ export default function SearchResults() {
   const sortLabel = SORT_OPTIONS.find((o) => o.value === sort)?.label || 'Relevance';
   const toggleCat = (id) => patch({ category: filters.category.includes(id) ? filters.category.filter((x) => x !== id) : [...filters.category, id] });
 
-  const gridCols = { xs: `repeat(${density}, 1fr)`, sm: 'repeat(3, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)', xl: 'repeat(5, 1fr)' };
+  const gridCols = { xs: `repeat(${density}, 1fr)`, sm: 'repeat(3, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(5, 1fr)', xl: 'repeat(6, 1fr)' };
 
   return (
     <Box sx={{ bgcolor: '#F3EEE4', minHeight: '70vh' }}>
